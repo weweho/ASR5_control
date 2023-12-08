@@ -101,7 +101,7 @@ void sokect_thread()
 int main(int argc, char  *argv[])
 {
     setlocale(LC_ALL,"");
-    ros::init(argc,argv,"talker");
+    ros::init(argc,argv,"asr5_control");
     ros::NodeHandle nh;
 
     thread web_socket_task(sokect_thread);
