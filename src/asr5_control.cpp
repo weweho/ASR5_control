@@ -1,10 +1,13 @@
 //
 // Created by aung on 23-12-8.
 //
-// 1.包含头文件
 #include "ros/ros.h"
-#include "std_msgs/String.h" //普通文本类型的消息
+#include "std_msgs/String.h"
 #include <sstream>
+
+#include"ar5.h"
+#include"json.hpp"
+//#include "websocket_endpoint.h"
 
 int main(int argc, char  *argv[])
 {
@@ -29,7 +32,6 @@ int main(int argc, char  *argv[])
         r.sleep();
         ros::spinOnce();
     }
-
 
     return 0;
 }

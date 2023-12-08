@@ -9,46 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
-
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
-
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
-
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
-
-
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES asr5_control
 #  CATKIN_DEPENDS roscpp std_msgs
 #  DEPENDS system_lib
@@ -56,12 +18,21 @@ catkin_package(
 
 
 include_directories(
-# include
+  include/asr5_control
+  include/Json
   ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(asr5_control
         src/asr5_control.cpp
+        src/websocket_endpoint.cpp
+        src/ar5.cpp
+        src/Json/common.c
+        src/Json/decoder.c
+        src/Json/encoder.c
+        src/Json/helper.c
+        src/Json/ieee754.c
+        src/Json/parser.c
         )
 
 target_link_libraries(asr5_control
