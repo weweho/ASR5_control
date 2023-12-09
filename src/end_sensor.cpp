@@ -1,32 +1,26 @@
 //
 // Created by aung on 2023/12/9.
 //
-//serial_port.cpp
 #include <ros/ros.h>
 #include <serial/serial.h>
 #include <iostream>
 #include "end_sensor.h"
+#include <QByteArray>
+#include <QString>
 
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "serial_port");
-    //创建句柄（虽然后面没用到这个句柄，但如果不创建，运行时进程会出错）
-    ros::NodeHandle n;
+    ros::NodeHandle node;
 
-    //创建一个serial类
     serial::Serial sp;
-    //创建timeout
     serial::Timeout to = serial::Timeout::simpleTimeout(100);
-    //设置要打开的串口名称
     sp.setPort("/dev/ttyUSB0");
-    //设置串口通信的波特率
     sp.setBaudrate(115200);
-    //串口设置timeout
     sp.setTimeout(to);
 
     try
     {
-        //打开串口
         sp.open();
     }
     catch(serial::IOException& e)
@@ -35,7 +29,6 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    //判断串口是否打开成功
     if(sp.isOpen())
     {
         ROS_INFO_STREAM("/dev/ttyUSB0 is opened.");
@@ -48,27 +41,27 @@ int main(int argc, char** argv)
     ros::Rate loop_rate(500);
     while(ros::ok())
     {
-        //获取缓冲区内的字节数
-        size_t n = sp.available();
-        if(n!=0)
+        if (sp.available())
         {
-            uint8_t buffer[1024];
-            //读出数据
-            n = sp.read(buffer, n);
-
-            for(int i=0; i<n; i++)
-            {
-                //16进制的方式打印到屏幕
-                std::cout << std::hex << (buffer[i] & 0xff) << " ";
+            std::string dataStr = sp.read(sp.available());
+            QByteArray data = QByteArray::fromStdString(dataStr);
+            QString hexStr=data.mid(3, 4).toHex();
+            bool conversionOK;
+            auto intForceValue = static_cast<qint16>(hexStr.toUInt(&conversionOK, 16));
+            if (!conversionOK) {
+                ROS_ERROR_STREAM("Conversion fail .");
+                return -1;
             }
-            std::cout << std::endl;
-            //把数据发送回去
-            sp.write(buffer, n);
+            if (intForceValue > 0x7FFF) {
+                intForceValue -= 0x10000;
+            }
+            double doubleForceValue = static_cast<double>(intForceValue)*0.01;
+            ROS_INFO("end_sensor num: %f \r\n",doubleForceValue);
         }
+        sp.write("010300500002C41A");
         loop_rate.sleep();
     }
 
-    //关闭串口
     sp.close();
 
     return 0;
