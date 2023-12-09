@@ -10,6 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
   serial
 )
 
+find_package(Qt5 REQUIRED COMPONENTS Core)
+
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES asr5_control
@@ -57,6 +59,7 @@ add_executable(end_effector
 target_link_libraries(end_effector
         ${catkin_LIBRARIES}
         controlcan
+        Qt5::Core
         )
 
 
