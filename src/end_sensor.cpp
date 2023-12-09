@@ -56,7 +56,7 @@ int main(int argc, char** argv)
                 intForceValue -= 0x10000;
             }
             double doubleForceValue = static_cast<double>(intForceValue)*0.01;
-            ROS_INFO("end_sensor num: %f \r\n",doubleForceValue);
+            ROS_INFO("end_sensor value: %f \r\n",doubleForceValue);
         }
         sp.write("010300500002C41A");
         loop_rate.sleep();
