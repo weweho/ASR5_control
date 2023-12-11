@@ -4,7 +4,6 @@
 //ROS
 #include "ros/ros.h"
 #include <sstream>
-#include<thread>
 
 //Other
 #include <cstdio>
@@ -13,18 +12,18 @@
 
 using namespace std;
 unique_ptr<ar5> Arm = make_unique<ar5>();
-void sokect_thread()
+void asr5_control()
 {
     std::string input;
     kagula::websocket_endpoint endpoint;
     endpoint.connect("ws://127.0.0.1:1880");
-
+    double para[6];
     while (1)
     {
         string s;
         int a, b = 0;
         cout << "1 上电、2 下电、3 获取状态信息、 4 获取位置点信息、 5 机械笔启动、6 机械笔停止 7 机械笔自由拖动 8 停止机械笔自由拖动 9 机械臂xyz给进" << endl;
-        cout << "10机械臂关节给进  11 机械臂旋转给进 12暂停运动 13恢复运动  14停止运动" << endl;
+        cout << "10机械臂关节给进  11 机械臂旋转给进 12暂停运动 13恢复运动  14停止运动 15移动到目标位置" << endl;
         printf("Input integer number:");
         scanf("%d", &a);
         switch (a) {
@@ -84,6 +83,10 @@ void sokect_thread()
                 s = Arm->To_CBOR(Arm->abortMove());
                 endpoint.send(s);
                 break;
+            case 15:printf("移动到目标位置\n");
+                s=Arm->To_CBOR(Arm->servoJ(para,5,false));
+                endpoint.send(s);
+                break;
             default:printf("error\n");
                 b = 1;
                 break;
@@ -103,9 +106,12 @@ int main(int argc, char  *argv[])
     setlocale(LC_ALL,"");
     ros::init(argc,argv,"asr5_control");
     ros::NodeHandle nh;
-
-    thread web_socket_task(sokect_thread);
-    web_socket_task.join();
+    ros::Rate loop_rate(500);
+    while(ros::ok())
+    {
+        asr5_control();
+        loop_rate.sleep();
+    }
 
     return 0;
 }

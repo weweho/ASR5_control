@@ -15,13 +15,13 @@ using namespace nlohmann;
 class ar5
 {
 private:
-    string c = "robot"; //¹Ì¶¨ÌîÐ´robot
-    string a;//º¯ÊýÃû³Æ
-    // std::string param_st;//ÃüÁî²ÎÊý
+    string c = "robot"; //ï¿½Ì¶ï¿½ï¿½ï¿½Ð´robot
+    string a;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // std::string param_st;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     json param_json;
     int param_int;
     bool param_bool;
-    int n; //×´Ì¬Âë±àºÅ
+    int n; //×´Ì¬ï¿½ï¿½ï¿½ï¿½
     json g;
 
 
@@ -30,18 +30,19 @@ public:
     virtual ~ar5();
     string To_CBOR(json J);
 
-    json GetInfo();//»ñÈ¡»úÐµ±ÛËùÓÐ×´Ì¬ÐÅÏ¢W
-    json GetGeom(); //»ñÈ¡Î»ÖÃµãÐÅÏ¢
+    json GetInfo();//ï¿½ï¿½È¡ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½Ï¢W
+    json GetGeom(); //ï¿½ï¿½È¡Î»ï¿½Ãµï¿½ï¿½ï¿½Ï¢
     json GetVersion();
-    json Power(bool state);//true ÉÏµç, false  ÏÂµç
-    json Start(bool state);//»úÐµ±Û Æô¶¯/Í£Ö¹ true Æô¶¯, false Í£Ö¹
-    json SwitchToFree(bool state);//»úÐµ±Û ×ÔÓÉÍÏ¶¯ true£º¿ÉÍÏ¶¯£¬false£º²»¿ÉÍÏ¶¯
-    json SwitchToCloseRobot();  //¹Ø±Õ»úÐµ±Û
-    json pauseMove();  //»úÐµ±Û ÔÝÍ£ÔË¶¯
-    json resumeMove();//»úÐµ±Û »Ö¸´ÔË¶¯
-    json abortMove();//»úÐµ±Û Í£Ö¹ÔË¶¯
-    json isMoveEnd();//»úÐµ±Û ÔË¶¯ÊÇ·ñÍ£Ö¹  »áÊä³öÒ»¸öboolÀàÐÍµÄ²ÎÊý true£ºÔË¶¯Í£Ö¹£¬false£ºÔË¶¯¼ÌÐø
-    json startCartFeedTrans(float dir, float delta); //»úÐµ±Û µ¥Î»¸ø½øº¯Êý dirÊÇÖá·½Ïò 1--X  2--Y 3--Z  deltaÊÇ¸ø½øÁ¿ È¡Öµ·¶Î§ÊÇ£¨-5£¬+5£©
-    json startJointFeedRot(int jointNo, float delta); //»úÐµ±Û »úÐµ±Û ¹Ø½Ú½ø¸øÔË¶¯º¯Êý jointNoÊÇ¹Ø½Ú±àºÅ 0--5  deltaÊÇ¸ø½øÁ¿ È¡Öµ·¶Î§ÊÇ£¨-5£¬+5£©
-    json startCartFeedRot(float dir, float delta); //»úÐµ±Û »úÐµ±Û Ðý×ª½ø¸øÔË¶¯º¯Êý  deltaÊÇ¸ø½øÁ¿ È¡Öµ·¶Î§ÊÇ£¨-5£¬+5£©
+    json Power(bool state);//true ï¿½Ïµï¿½, false  ï¿½Âµï¿½
+    json Start(bool state);//ï¿½ï¿½Ðµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½/Í£Ö¹ true ï¿½ï¿½ï¿½ï¿½, false Í£Ö¹
+    json SwitchToFree(bool state);//ï¿½ï¿½Ðµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½ trueï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½ï¿½ï¿½falseï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½
+    json SwitchToCloseRobot();  //ï¿½Ø±Õ»ï¿½Ðµï¿½ï¿½
+    json pauseMove();  //ï¿½ï¿½Ðµï¿½ï¿½ ï¿½ï¿½Í£ï¿½Ë¶ï¿½
+    json resumeMove();//ï¿½ï¿½Ðµï¿½ï¿½ ï¿½Ö¸ï¿½ï¿½Ë¶ï¿½
+    json abortMove();//ï¿½ï¿½Ðµï¿½ï¿½ Í£Ö¹ï¿½Ë¶ï¿½
+    json isMoveEnd();//ï¿½ï¿½Ðµï¿½ï¿½ ï¿½Ë¶ï¿½ï¿½Ç·ï¿½Í£Ö¹  ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½boolï¿½ï¿½ï¿½ÍµÄ²ï¿½ï¿½ï¿½ trueï¿½ï¿½ï¿½Ë¶ï¿½Í£Ö¹ï¿½ï¿½falseï¿½ï¿½ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½ï¿½
+    json startCartFeedTrans(float dir, float delta); //ï¿½ï¿½Ðµï¿½ï¿½ ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ dirï¿½ï¿½ï¿½á·½ï¿½ï¿½ 1--X  2--Y 3--Z  deltaï¿½Ç¸ï¿½ï¿½ï¿½ï¿½ï¿½ È¡Öµï¿½ï¿½Î§ï¿½Ç£ï¿½-5ï¿½ï¿½+5ï¿½ï¿½
+    json startJointFeedRot(int jointNo, float delta); //ï¿½ï¿½Ðµï¿½ï¿½ ï¿½ï¿½Ðµï¿½ï¿½ ï¿½Ø½Ú½ï¿½ï¿½ï¿½ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½ï¿½ jointNoï¿½Ç¹Ø½Ú±ï¿½ï¿½ 0--5  deltaï¿½Ç¸ï¿½ï¿½ï¿½ï¿½ï¿½ È¡Öµï¿½ï¿½Î§ï¿½Ç£ï¿½-5ï¿½ï¿½+5ï¿½ï¿½
+    json startCartFeedRot(float dir, float delta); //ï¿½ï¿½Ðµï¿½ï¿½ ï¿½ï¿½Ðµï¿½ï¿½ ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½ï¿½  deltaï¿½Ç¸ï¿½ï¿½ï¿½ï¿½ï¿½ È¡Öµï¿½ï¿½Î§ï¿½Ç£ï¿½-5ï¿½ï¿½+5ï¿½ï¿½
+    json servoJ(const double para[6],double intervalSecond,bool bSync);
 };
