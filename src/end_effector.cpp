@@ -37,7 +37,7 @@ bool Init_CAN1(int nDeviceType, int nDeviceInd, int nCANInd, VCI_INIT_CONFIG con
     else
     {
         ROS_INFO_STREAM(">>Start CAN1 success");
-        return -1;
+        return 1;
     }
 }
 
