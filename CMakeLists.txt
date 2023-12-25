@@ -54,6 +54,7 @@ target_link_libraries(asr5_control
 ##########end_effector####################
 add_executable(end_effector
         src/end_effector.cpp
+        src/end_effector/end_effector.cpp
         )
 
 target_link_libraries(end_effector
