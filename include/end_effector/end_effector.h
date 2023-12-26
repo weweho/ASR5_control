@@ -16,7 +16,7 @@ public:
     bool Init_CAN1() const;
     void inquireMotor1Status();
     void inquireMotor2Status();
-    void sendCommand(int motor_ip,int speed, int angle) const;
+    bool sendCommand(int motor_ip,int speed, int angle) const;
 
 private:
     static QString decimalToHex(int decimalNumber);

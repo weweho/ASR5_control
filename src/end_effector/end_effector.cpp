@@ -101,7 +101,7 @@ namespace end_effector
             ROS_INFO_STREAM("motor2 state abnormal!");
     }
 
-    void endEffector::sendCommand(int motor_ip, int speed, int angle) const
+    bool endEffector::sendCommand(int motor_ip, int speed, int angle) const
     {
         VCI_CAN_OBJ send[1];
         QString angleHexString;
@@ -125,9 +125,16 @@ namespace end_effector
         send[0].Data[7] = angleHexString.midRef(0, 2).toUInt(nullptr, 16);
 
         if(VCI_Transmit(nDeviceType, nDeviceInd, nCANInd, send, 1))
-            ROS_INFO("send command succeed\r\n");
+        {
+            ROS_INFO_ONCE("send command succeed\r\n");
+            return true;
+        }
         else
-            ROS_INFO("send command fail\r\n");
+        {
+            ROS_INFO_ONCE("send command fail\r\n");
+            return false;
+        }
+
     }
 
 } // end_effector

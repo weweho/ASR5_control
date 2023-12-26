@@ -15,11 +15,11 @@ int motor_2 = 1;
 
 void controlMotorOrder(end_effector::endEffector end_effector)
 {
-    if(communicationStatus){
+    if(!initStatus)
         detAngle = initAngle-detAngle;
-        end_effector.sendCommand(motor_2,zhaZhenSpeed,detAngle);
+    else
         detAngle = 0;
-    }
+    initStatus=end_effector.sendCommand(motor_2,zhaZhenSpeed,detAngle);
 }
 
 int main(int argc, char** argv)
