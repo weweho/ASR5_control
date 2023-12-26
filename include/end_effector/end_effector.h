@@ -7,6 +7,13 @@
 #include "controlcan.h"
 #include <ros/ros.h>
 #include <QObject>
+struct motor_data{
+    int temp;
+    int iq;
+    int speed;
+    int encoder;
+};
+
 namespace end_effector
 {
 class endEffector
@@ -14,9 +21,10 @@ class endEffector
 public:
     endEffector();
     bool Init_CAN1() const;
-    void inquireMotor1Status();
-    void inquireMotor2Status();
-    bool sendCommand(int motor_ip,int speed, int angle) const;
+    bool receiveData(VCI_CAN_OBJ *send,VCI_CAN_OBJ *rec) const;
+    motor_data readMotorData(int motor_ip) const;
+    bool sendAngleCommand(int motor_ip,int speed, int angle) const;
+    bool sendAngleCommand2(int motor_ip,int speed, int angle) const;
 
 private:
     static QString decimalToHex(int decimalNumber);

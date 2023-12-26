@@ -3,8 +3,6 @@
 //
 
 #include "end_effector.h"
-
-bool communicationStatus = true;
 bool initStatus = false;
 
 int zhaZhenSpeed =300;        //自定义扎针速度  单位度/秒
@@ -15,11 +13,14 @@ int motor_2 = 1;
 
 void controlMotorOrder(end_effector::endEffector end_effector)
 {
+    motor_data motor_data{};
+    motor_data=end_effector.readMotorData(motor_2);
+    ROS_INFO("speed:%d,temp:%d,encoder:%d,iq:%d\r\n",motor_data.speed,motor_data.temp,motor_data.encoder,motor_data.iq);
     if(!initStatus)
         detAngle = initAngle-detAngle;
     else
         detAngle = 0;
-    initStatus=end_effector.sendCommand(motor_2,zhaZhenSpeed,detAngle);
+    initStatus=end_effector.sendAngleCommand(motor_2,zhaZhenSpeed,detAngle);
 }
 
 int main(int argc, char** argv)
