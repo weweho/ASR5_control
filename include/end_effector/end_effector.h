@@ -8,10 +8,10 @@
 #include <ros/ros.h>
 #include <QObject>
 struct motor_data{
-    int temp;
-    int iq;
-    int speed;
-    int encoder;
+    uint8_t temp;
+    uint16_t iq;
+    uint16_t speed;
+    uint16_t encoder;
 };
 
 namespace end_effector
@@ -24,7 +24,7 @@ public:
     bool receiveData(VCI_CAN_OBJ *send,VCI_CAN_OBJ *rec) const;
     motor_data readMotorData(int motor_ip) const;
     bool sendAngleCommand(int motor_ip,int speed, int angle) const;
-    bool sendAngleCommand2(int motor_ip,int speed, int angle) const;
+    bool sendAngleCommand2(int motor_ip,short speed, int angle) const;
 
 private:
     static QString decimalToHex(int decimalNumber);

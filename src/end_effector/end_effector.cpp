@@ -116,7 +116,7 @@ namespace end_effector
 
     }
 
-    bool endEffector::sendAngleCommand2(int motor_ip, int speed, int angle) const
+    bool endEffector::sendAngleCommand2(int motor_ip, short speed, int angle) const
     {
         VCI_CAN_OBJ send[1];
 
