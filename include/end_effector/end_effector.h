@@ -7,11 +7,20 @@
 #include "controlcan.h"
 #include <ros/ros.h>
 #include <QObject>
-struct motor_data{
+struct MOTER_DATA{
     uint8_t temp;
     uint16_t iq;
     uint16_t speed;
     uint16_t encoder;
+};
+
+struct PID{
+    uint8_t anglePidKp;
+    uint8_t anglePidKi;
+    uint8_t speedPidKp;
+    uint8_t speedPidKi;
+    uint8_t iqPidKp;
+    uint8_t iqPidKi;
 };
 
 namespace end_effector
@@ -22,7 +31,9 @@ public:
     endEffector();
     bool Init_CAN1() const;
     bool receiveData(VCI_CAN_OBJ *send,VCI_CAN_OBJ *rec) const;
-    motor_data readMotorData(int motor_ip) const;
+    MOTER_DATA readMotorData(int motor_ip) const;
+    PID readPidParam(int motor_ip) const;
+    bool writePidToRAM(int motor_ip,PID pid) const;
     bool sendAngleCommand(int motor_ip,int speed, int angle) const;
     bool sendAngleCommand2(int motor_ip,short speed, int angle) const;
 

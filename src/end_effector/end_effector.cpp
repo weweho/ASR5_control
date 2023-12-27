@@ -11,10 +11,10 @@ namespace end_effector
         //open device
         if(VCI_OpenDevice(nDeviceType,nDeviceInd,0)==1)
         {
-            ROS_INFO_STREAM(">>open deivce success!");
+            ROS_INFO_STREAM(">>open deivce success");
         }else
         {
-            ROS_INFO_STREAM(">>open deivce error!");
+            ROS_INFO_STREAM(">>open deivce fail!");
         }
     }
 
@@ -40,14 +40,14 @@ namespace end_effector
         if (VCI_InitCAN(nDeviceType, nDeviceInd, nCANInd, &config) != 1)
         {
             VCI_CloseDevice(nDeviceType, nDeviceInd);
-            ROS_INFO_STREAM(">>Init CAN1 error");
+            ROS_INFO_STREAM(">>Init CAN1 fail!");
             return false;
         }
         VCI_ClearBuffer(nDeviceType, nDeviceInd, nCANInd);
         if (VCI_StartCAN(nDeviceType, nDeviceInd, nCANInd) != 1)
         {
             VCI_CloseDevice(nDeviceType, nDeviceInd);
-            ROS_INFO_STREAM(">>Start CAN1 error");
+            ROS_INFO_STREAM(">>Start CAN1 fail!");
             return false;
         }
         else
@@ -61,7 +61,7 @@ namespace end_effector
     {
         int num_ = 50;
         VCI_CAN_OBJ rec_[num_];
-        unsigned int reclen_ = 0;
+        unsigned int reclen_;
         int i,j;
         //VCI_Receive(设备类型、设备索引、CAN通道索引0就是CAN1、接收数组的首指针rec、接收数组的长度50、保留参数)
         if((reclen_ = VCI_Receive(nDeviceType,nDeviceInd,nCANInd,rec_,num_,200)) >= 0)//调用接收函数，如果有数据，则进行处理
@@ -110,7 +110,7 @@ namespace end_effector
         }
         else
         {
-            ROS_INFO_ONCE("send command fail\r\n");
+            ROS_INFO_ONCE("send command fail!\r\n");
             return false;
         }
 
@@ -141,15 +141,15 @@ namespace end_effector
         }
         else
         {
-            ROS_INFO_ONCE("send command fail\r\n");
+            ROS_INFO_ONCE("send command fail!\r\n");
             return false;
         }
 
     }
 
-    motor_data endEffector::readMotorData(int motor_ip) const
+    MOTER_DATA endEffector::readMotorData(int motor_ip) const
     {
-        motor_data motor_data_{};
+        MOTER_DATA motor_data_{};
         VCI_CAN_OBJ send[1];
         VCI_CAN_OBJ rec[1];
         send[0].ID = 321+motor_ip; //帧ID
@@ -173,13 +173,76 @@ namespace end_effector
             motor_data_.iq=(rec -> Data[3] << 8) | rec -> Data[2];      //电流
             motor_data_.speed=(rec -> Data[5] << 8) | rec -> Data[4];   //速度
             motor_data_.encoder=(rec -> Data[7] << 8) | rec -> Data[6]; //位置
-            ROS_INFO_ONCE("encoder read succeed\r\n");
+            ROS_INFO_ONCE("read encoder succeed\r\n");
         }
         else
-            ROS_INFO_STREAM("motor state abnormal!\r\n");
+            ROS_INFO_STREAM("read encoder fail!\r\n");
         return motor_data_;
     }
 
+    PID endEffector::readPidParam(int motor_ip) const
+    {
+        PID pid_{};
+        VCI_CAN_OBJ send[1];
+        VCI_CAN_OBJ rec[1];
+        send[0].ID = 321+motor_ip; //帧ID
+        send[0].SendType = 0; //发送帧类型：0为正常发送
+        send[0].RemoteFlag = 0; //0为数据帧，1为远程帧
+        send[0].ExternFlag = 0; //0为标准帧，1为拓展帧
+        send[0].DataLen = 8; //数据长度8字节
+        send[0].Data[0] = 0x30;
+        send[0].Data[1] = 0x00;
+        send[0].Data[2] = 0x00;
+        send[0].Data[3] = 0x00;
+        send[0].Data[4] = 0x00;
+        send[0].Data[5] = 0x00;
+        send[0].Data[6] = 0x00;
+        send[0].Data[7] = 0x00;
 
+        if(VCI_Transmit(nDeviceType, nDeviceInd, nCANInd, send, 1))
+        {
+            while(!receiveData(send,rec));
+            pid_.anglePidKp=rec->Data[2];       //位置环P参数
+            pid_.anglePidKi=rec->Data[3];       //位置环I参数
+            pid_.speedPidKp=rec->Data[4];       //速度环P参数
+            pid_.speedPidKi=rec->Data[5];       //速度环I参数
+            pid_.iqPidKp=rec->Data[6];          //转矩环P参数
+            pid_.iqPidKi=rec->Data[7];          //转矩环I参数
+            ROS_INFO_ONCE("read pid succeed\r\n");
+        }
+        else
+            ROS_INFO_STREAM("read pid fail!\r\n");
+
+        return pid_;
+    }
+
+    bool endEffector::writePidToRAM(int motor_ip,PID pid) const
+    {
+        VCI_CAN_OBJ send[1];
+        send[0].ID = 321+motor_ip; //帧ID
+        send[0].SendType = 0; //发送帧类型：0为正常发送
+        send[0].RemoteFlag = 0; //0为数据帧，1为远程帧
+        send[0].ExternFlag = 0; //0为标准帧，1为拓展帧
+        send[0].DataLen = 8; //数据长度8字节
+        send[0].Data[0] = 0x31;
+        send[0].Data[1] = 0x00;
+        send[0].Data[2] = *(uint8_t*)(&pid.anglePidKp);
+        send[0].Data[3] = *(uint8_t*)(&pid.anglePidKi);
+        send[0].Data[4] = *(uint8_t*)(&pid.speedPidKp);
+        send[0].Data[5] = *(uint8_t*)(&pid.speedPidKi);
+        send[0].Data[6] = *(uint8_t*)(&pid.iqPidKp);
+        send[0].Data[7] = *(uint8_t*)(&pid.iqPidKi);
+
+        if(VCI_Transmit(nDeviceType, nDeviceInd, nCANInd, send, 1))
+        {
+            ROS_INFO_ONCE("send pid succeed\r\n");
+            return true;
+        }
+        else
+        {
+            ROS_INFO_ONCE("send pid fail!\r\n");
+            return false;
+        }
+    }
 
 } // end_effector
