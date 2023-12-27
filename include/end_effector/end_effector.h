@@ -6,12 +6,12 @@
 #define SRC_END_EFFECTOR_H
 #include "controlcan.h"
 #include <ros/ros.h>
-#include <QObject>
+
 struct MOTER_DATA{
     uint8_t temp;
-    uint16_t iq;
-    uint16_t speed;
-    uint16_t encoder;
+    short iq;
+    short speed;
+    short encoder;
 };
 
 struct PID{
@@ -30,15 +30,15 @@ class endEffector
 public:
     endEffector();
     bool Init_CAN1() const;
-    bool receiveData(VCI_CAN_OBJ *send,VCI_CAN_OBJ *rec) const;
-    MOTER_DATA readMotorData(int motor_ip) const;
-    PID readPidParam(int motor_ip) const;
+    bool readMotorData(int motor_ip ,MOTER_DATA *motor_data) const;
+    bool readPidParam(int motor_ip, PID *pid) const;
     bool writePidToRAM(int motor_ip,PID pid) const;
-    bool sendAngleCommand(int motor_ip,int speed, int angle) const;
-    bool sendAngleCommand2(int motor_ip,short speed, int angle) const;
+    bool sendAngleCommand(int motor_ip,short speed, int angle) const;
 
 private:
-    static QString decimalToHex(int decimalNumber);
+    static void printfRec(VCI_CAN_OBJ *rec,unsigned int reclen) ;
+    bool hasRecData() const;
+    bool receiveData(VCI_CAN_OBJ *send,VCI_CAN_OBJ *rec) const;
     int nDeviceType = 4; //device type：CANalyst-II(4)
     int nDeviceInd = 0; //device num：one USB-CAN
     int nCANInd = 0;//CAN1

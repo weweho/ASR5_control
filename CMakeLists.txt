@@ -34,21 +34,21 @@ link_directories(
 )
 
 ##########asr5_control####################
-add_executable(asr5_control
-        src/asr5_control.cpp
-        src/asr5_control/websocket_endpoint.cpp
-        src/asr5_control/ar5.cpp
-        src/Json/common.c
-        src/Json/decoder.c
-        src/Json/encoder.c
-        src/Json/helper.c
-        src/Json/ieee754.c
-        src/Json/parser.c
-        )
-
-target_link_libraries(asr5_control
-        ${catkin_LIBRARIES}
-        )
+#add_executable(asr5_control
+#        src/asr5_control.cpp
+#        src/asr5_control/websocket_endpoint.cpp
+#        src/asr5_control/ar5.cpp
+#        src/Json/common.c
+#        src/Json/decoder.c
+#        src/Json/encoder.c
+#        src/Json/helper.c
+#        src/Json/ieee754.c
+#        src/Json/parser.c
+#        )
+#
+#target_link_libraries(asr5_control
+#        ${catkin_LIBRARIES}
+#        )
 
 
 ##########end_effector####################
@@ -60,16 +60,15 @@ add_executable(end_effector
 target_link_libraries(end_effector
         ${catkin_LIBRARIES}
         controlcan
-        Qt5::Core
         )
 
 
 
 ##########end_sensor####################
-add_executable(end_sensor
-        src/end_sensor.cpp
-        )
-
-target_link_libraries(end_sensor
-        ${catkin_LIBRARIES}
-        )
+#add_executable(end_sensor
+#        src/end_sensor.cpp
+#        )
+#
+#target_link_libraries(end_sensor
+#        ${catkin_LIBRARIES}
+#        )
