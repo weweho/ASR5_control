@@ -4,7 +4,6 @@
 #include <ros/ros.h>
 #include <serial/serial.h>
 #include <iostream>
-#include "end_sensor.h"
 
 int main(int argc, char** argv)
 {
@@ -16,7 +15,8 @@ int main(int argc, char** argv)
     sp.setPort("/dev/ttyUSB0");
     sp.setBaudrate(115200);
     sp.setTimeout(to);
-    int value{};
+    uint8_t send_data[8]{};
+    uint8_t rec_data[9]{};
 
     try
     {
@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     catch(serial::IOException& e)
     {
         ROS_ERROR_STREAM("Unable to open port.");
-        return -1;
+        return false;
     }
 
     if(sp.isOpen())
@@ -34,35 +34,33 @@ int main(int argc, char** argv)
     }
     else
     {
-        return -1;
+        return false;
     }
 
-    ros::Rate loop_rate(500);
-    while(ros::ok())
+    ros::Rate loop_rate(50);
+    while(ros::ok()&sp.isOpen())
     {
         if (sp.available())
         {
-            std::string dataStr = sp.read(sp.available());
-            ROS_INFO("end_sensor str: %s \r\n",dataStr.c_str ()); //01 03 02 19 98 B2 7E （这里的19 98 是我们要的）
-            value=*(uint16_t*)(&dataStr+1);
-            ROS_INFO("end_sensor value: %d \r\n",value);
-
-//            QByteArray data = QByteArray::fromStdString(dataStr);
-//            QString hexStr=data.mid(3, 4).toHex();
-//            bool conversionOK;
-//            auto intForceValue = static_cast<qint16>(hexStr.toUInt(&conversionOK, 16));
-//            if (!conversionOK) {
-//                ROS_ERROR_STREAM("Conversion fail .");
-//                return -1;
-//            }
-//            if (intForceValue > 0x7FFF) {
-//                intForceValue -= 0x10000;
-//            }
-//            double doubleForceValue = static_cast<double>(intForceValue)*0.01;
-//            ROS_INFO("end_sensor value: %f \r\n",doubleForceValue);
+            sp.read(rec_data,sp.available());
+            for(int i = 0;i<sizeof(rec_data); i++)
+            {
+                printf("%02X ",rec_data[i]);
+            }
+            printf("\n");
+            double value = (rec_data[3]<<24|rec_data[4]<<16|rec_data[5]<<8|rec_data[6])*0.01;
+            ROS_INFO("rec_data :%f",value );
         }
-//        sp.write("010300500002C41A");
-        sp.write("01039C400002EB8F");
+
+        send_data[0]=0X01;
+        send_data[1]=0X03;
+        send_data[2]=0X00;
+        send_data[3]=0X50;
+        send_data[4]=0X00;
+        send_data[5]=0X02;
+        send_data[6]=0XC4;
+        send_data[7]=0X1A;
+        sp.write(send_data,8);
         loop_rate.sleep();
     }
 
