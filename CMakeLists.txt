@@ -65,10 +65,10 @@ target_link_libraries(end_effector
 
 
 ##########end_sensor####################
-#add_executable(end_sensor
-#        src/end_sensor.cpp
-#        )
-#
-#target_link_libraries(end_sensor
-#        ${catkin_LIBRARIES}
-#        )
+add_executable(end_sensor
+        src/end_sensor.cpp
+        )
+
+target_link_libraries(end_sensor
+        ${catkin_LIBRARIES}
+        )
