@@ -70,5 +70,4 @@ add_executable(end_sensor
 
 target_link_libraries(end_sensor
         ${catkin_LIBRARIES}
-        Qt5::Core
         )
