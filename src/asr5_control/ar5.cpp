@@ -18,13 +18,13 @@ string ar5::To_CBOR(json J)
     string code_str;
     for (int i = 0; i < v_cbor.size(); i++)
     {
-        //·ÖÀë16½øÖÆÊýµÄ"Ê®Î»"ºÍ¡°¸öÎ»¡±
+        //ï¿½ï¿½ï¿½ï¿½16ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"Ê®Î»"ï¿½Í¡ï¿½ï¿½ï¿½Î»ï¿½ï¿½
         char s1 = char(v_cbor[i] >> 4);
         char s2 = char(v_cbor[i] & 0xf);
-        //½«·ÖÀëµÃµ½µÄÊý×Ö×ª»»³É¶ÔÓ¦µÄASCIIÂë£¬Êý×ÖºÍ×ÖÄ¸·Ö¿ª£¬Í³Ò»°´ÕÕÐ¡Ð´´¦Àí
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½É¶ï¿½Ó¦ï¿½ï¿½ASCIIï¿½ë£¬ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½Ä¸ï¿½Ö¿ï¿½ï¿½ï¿½Í³Ò»ï¿½ï¿½ï¿½ï¿½Ð¡Ð´ï¿½ï¿½ï¿½ï¿½
         s1 > 9 ? s1 += 87 : s1 += 48;
         s2 > 9 ? s2 += 87 : s2 += 48;
-        //½«´¦ÀíºÃµÄ×Ö·û·ÅÈëµ½stringÖÐ
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ëµ½stringï¿½ï¿½
         code_str.append(1, s1);
         code_str.append(1, s2);
     }
@@ -282,6 +282,35 @@ json ar5::startCartFeedRot(float dir, float delta)
                 {"a",a},
                 {"d",param_json},
                 {"n",n}
+    };
+    cout << "j=   " << j.dump() << endl;
+    return j;
+}
+
+json ar5::servoJ(const double para[6],double intervalSecond,bool bSync)
+{
+    json servoJPose={
+
+    };
+    this->c = "robot";
+    this->a = "servoJ";
+    this->param_json={
+            {"equip",0},
+            {"bSync",bSync},
+            {"interval",intervalSecond},
+            {"geom",{para[0],para[1],para[2],
+                     para[3],para[4],para[5],
+                     para[0],para[1],para[2],
+                     para[3],para[4],para[5]}
+            }
+    };
+    this->n = 1126;
+
+    json j = {
+            {"c",c},
+            {"a",a},
+            {"d",param_json},
+            {"n",n}
     };
     cout << "j=   " << j.dump() << endl;
     return j;
