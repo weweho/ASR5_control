@@ -17,6 +17,14 @@ int main(int argc, char** argv)
     sp.setTimeout(to);
     uint8_t send_data[8]{};
     uint8_t rec_data[9]{};
+    send_data[0]=0X01;
+    send_data[1]=0X03;
+    send_data[2]=0X00;
+    send_data[3]=0X50;
+    send_data[4]=0X00;
+    send_data[5]=0X02;
+    send_data[6]=0XC4;
+    send_data[7]=0X1A;
 
     try
     {
@@ -51,15 +59,6 @@ int main(int argc, char** argv)
             double value = (rec_data[3]<<24|rec_data[4]<<16|rec_data[5]<<8|rec_data[6])*0.01;
             ROS_INFO("rec_data :%f",value );
         }
-
-        send_data[0]=0X01;
-        send_data[1]=0X03;
-        send_data[2]=0X00;
-        send_data[3]=0X50;
-        send_data[4]=0X00;
-        send_data[5]=0X02;
-        send_data[6]=0XC4;
-        send_data[7]=0X1A;
         sp.write(send_data,8);
         loop_rate.sleep();
     }
