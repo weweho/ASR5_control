@@ -15,16 +15,22 @@ int main(int argc, char** argv)
     sp.setPort("/dev/ttyUSB0");
     sp.setBaudrate(115200);
     sp.setTimeout(to);
-    uint8_t send_data[8]{};
-    uint8_t rec_data[9]{};
-    send_data[0]=0X01;
-    send_data[1]=0X03;
-    send_data[2]=0X00;
-    send_data[3]=0X50;
-    send_data[4]=0X00;
-    send_data[5]=0X02;
-    send_data[6]=0XC4;
-    send_data[7]=0X1A;
+    uint8_t end_sensor_send[8]{};
+    uint8_t end_sensor_rec[9]{};
+
+    end_sensor_send[0]=0X01;
+    end_sensor_send[1]=0X03;
+    end_sensor_send[2]=0X00;
+    end_sensor_send[3]=0X50;
+    end_sensor_send[4]=0X00;
+    end_sensor_send[5]=0X02;
+    end_sensor_send[6]=0XC4;
+    end_sensor_send[7]=0X1A;
+
+    uint8_t pushrod_send[3]{};
+    pushrod_send[0]=1;
+    pushrod_send[1]=1;
+    pushrod_send[2]=45;
 
     try
     {
@@ -50,16 +56,12 @@ int main(int argc, char** argv)
     {
         if (sp.available())
         {
-            sp.read(rec_data,sp.available());
-            for(int i = 0;i<sizeof(rec_data); i++)
-            {
-                printf("%02X ",rec_data[i]);
-            }
-            printf("\n");
-            double value = (rec_data[3]<<24|rec_data[4]<<16|rec_data[5]<<8|rec_data[6])*0.01;
+            sp.read(end_sensor_rec,sp.available());
+            double value = (end_sensor_rec[3]<<24|end_sensor_rec[4]<<16|end_sensor_rec[5]<<8|end_sensor_rec[6])*0.01;
             ROS_INFO("rec_data :%f",value );
         }
-        sp.write(send_data,8);
+        sp.write(end_sensor_send,8);
+        sp.write(pushrod_send,3);
         loop_rate.sleep();
     }
 
