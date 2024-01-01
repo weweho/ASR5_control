@@ -23,7 +23,7 @@ catkin_package(
 include_directories(
   include/asr5_control
   include/Json
-  include/end_effector
+        include/end_device
   include/end_sensor
   ${catkin_INCLUDE_DIRS}
 )
@@ -51,10 +51,11 @@ link_directories(
 #        )
 
 
-##########end_effector####################
+##########end_device####################
 add_executable(end_effector
-        src/end_effector.cpp
-        src/end_effector/end_effector.cpp
+        src/end_device.cpp
+        src/end_device/end_effector.cpp
+        src/end_device/end_sensor.cpp
         )
 
 target_link_libraries(end_effector

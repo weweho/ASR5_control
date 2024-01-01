@@ -29,7 +29,7 @@ class endEffector
 {
 public:
     endEffector();
-    bool Init_CAN1() const;
+    bool initCAN1() const;
     bool readMotorData(int motor_ip ,MOTER_DATA *motor_data) const;
     bool readPidParam(int motor_ip, PID *pid) const;
     bool writePidToRAM(int motor_ip,PID pid) const;
@@ -44,6 +44,6 @@ private:
     int nCANInd = 0;//CAN1
 };
 
-} // end_effector
+} // end_device
 
 #endif //SRC_END_EFFECTOR_H

@@ -18,7 +18,7 @@ namespace end_effector
         }
     }
 
-    bool endEffector::Init_CAN1() const
+    bool endEffector::initCAN1() const
     {
         //CAN config
         VCI_INIT_CONFIG config;
@@ -229,4 +229,4 @@ namespace end_effector
 
 
 
-} // end_effector
+} // end_device
