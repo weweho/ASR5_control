@@ -20,11 +20,11 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
     end_effector::endEffector end_effector;
     end_sensor::endSensor end_sensor;
-    ros::Rate r(50);
+    ros::Rate r(10);
     end_sensor.initUSB0();
     while(end_sensor.USB0isOpen()&&ros::ok())
     {
-        end_sensor.send_string("1 1 45\n");
+        end_sensor.send_string("1 1 1\n");
         end_sensor.readESPData();
         r.sleep();
     }

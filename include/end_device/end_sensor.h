@@ -23,7 +23,6 @@ private:
     serial::Serial sp;
     serial::Timeout to;
     uint8_t end_sensor_send[8]{};
-    uint8_t esp_rec[10]{};
     uint8_t end_sensor_rec[9]{};
 
 };

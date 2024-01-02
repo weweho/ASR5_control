@@ -71,21 +71,12 @@ namespace end_sensor
 
     bool endSensor::readESPData()
     {
+        std::string esp_rec{};
         if (sp.isOpen()&&sp.available())
         {
             std::string str_;
-            int num{};
-            sp.read(esp_rec,sp.available());
-            for(uint8_t i : esp_rec)
-            {
-                str_[num]=i;
-                if(i=='\n')
-                {
-                    printf("%s",str_.c_str());
-                    num=0;
-                }
-            }
-            return true;
+            sp.read(esp_rec,150);
+            printf("%s",esp_rec.c_str());
         }
         return false;
     }
