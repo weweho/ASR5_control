@@ -30,6 +30,7 @@ class endEffector
 public:
     endEffector();
     bool initCAN1() const;
+    bool CAN1isOpen() const;
     bool readMotorData(int motor_ip ,MOTER_DATA *motor_data) const;
     bool readPidParam(int motor_ip, PID *pid) const;
     bool writePidToRAM(int motor_ip,PID pid) const;

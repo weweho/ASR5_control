@@ -14,9 +14,9 @@ class endSensor
 public:
     endSensor();
     bool initUSB0();
+    bool USB0isOpen();
     bool getSensorData(double *value);
     bool sendPutterCommand(bool is_push,int angle);
-
 
 private:
     serial::Serial sp;

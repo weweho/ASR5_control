@@ -36,6 +36,11 @@ namespace end_effector
             ROS_INFO_ONCE(">>Init CAN1 fail!");
             return false;
         }
+        return true;
+    }
+
+    bool endEffector::CAN1isOpen() const
+    {
         VCI_ClearBuffer(nDeviceType, nDeviceInd, nCANInd);
         if (VCI_StartCAN(nDeviceType, nDeviceInd, nCANInd) != 1)
         {

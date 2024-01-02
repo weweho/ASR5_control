@@ -33,13 +33,18 @@ namespace end_sensor
             return false;
         }
 
+    }
+
+    bool endSensor::USB0isOpen()
+    {
         if(sp.isOpen())
         {
-            ROS_INFO_STREAM("/dev/ttyUSB0 is opened.");
+            ROS_INFO_ONCE("/dev/ttyUSB0 is opened.");
             return true;
         }
         else
         {
+            ROS_INFO_ONCE("/dev/ttyUSB0 open fail.");
             return false;
         }
     }
@@ -65,6 +70,7 @@ namespace end_sensor
         putter_send[2]=(angle>90?90:angle);
         if(sp.isOpen())
         {
+            usleep(100); //0.1ms
             sp.write(putter_send,3);
             return true;
         }

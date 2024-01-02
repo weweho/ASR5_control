@@ -52,24 +52,14 @@ link_directories(
 
 
 ##########end_device####################
-add_executable(end_effector
+add_executable(end_device
         src/end_device.cpp
         src/end_device/end_effector.cpp
         src/end_device/end_sensor.cpp
         )
 
-target_link_libraries(end_effector
+target_link_libraries(end_device
         ${catkin_LIBRARIES}
         controlcan
         )
 
-
-
-##########end_sensor####################
-add_executable(end_sensor
-        src/end_sensor.cpp
-        )
-
-target_link_libraries(end_sensor
-        ${catkin_LIBRARIES}
-        )
