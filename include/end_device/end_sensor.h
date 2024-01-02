@@ -16,14 +16,15 @@ public:
     bool initUSB0();
     bool USB0isOpen();
     bool getSensorData(double *value);
-    bool sendPutterCommand(bool is_push,int angle);
+    bool readESPData();
+    void send_string(const char *str);
 
 private:
     serial::Serial sp;
     serial::Timeout to;
     uint8_t end_sensor_send[8]{};
+    uint8_t esp_rec[10]{};
     uint8_t end_sensor_rec[9]{};
-    uint8_t putter_send[3]{};
 
 };
 

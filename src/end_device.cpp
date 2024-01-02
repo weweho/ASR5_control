@@ -8,7 +8,7 @@
 short zhaZhenSpeed =50;        //自定义扎针速度  单位度/秒
 int detAngle = -100;
 double sensor_data{};
-int putter_angle=45;
+int putter_angle=90;
 int motor_nz = 0;
 int motor_tc = 1;
 
@@ -22,15 +22,10 @@ int main(int argc, char** argv)
     end_sensor::endSensor end_sensor;
     ros::Rate r(50);
     end_sensor.initUSB0();
-    end_effector.initCAN1();
-    while(end_effector.CAN1isOpen()&&end_sensor.USB0isOpen()&&ros::ok())
+    while(end_sensor.USB0isOpen()&&ros::ok())
     {
-        end_effector.readMotorData(motor_tc,&motor_data);
-        end_effector.readPidParam(motor_tc,&pid);
-        end_effector.sendAngleCommand(motor_tc,zhaZhenSpeed,detAngle);
-
-        end_sensor.getSensorData(&sensor_data);
-        end_sensor.sendPutterCommand(true,putter_angle);
+        end_sensor.send_string("1 1 45\n");
+        end_sensor.readESPData();
         r.sleep();
     }
     return 0;

@@ -32,7 +32,7 @@ namespace end_sensor
             ROS_ERROR_STREAM("Unable to open port.");
             return false;
         }
-
+        return true;
     }
 
     bool endSensor::USB0isOpen()
@@ -63,15 +63,28 @@ namespace end_sensor
         return false;
     }
 
-    bool endSensor::sendPutterCommand(bool is_push, int angle)
+    void endSensor::send_string(const char *str)
     {
-        putter_send[0]=1;
-        putter_send[1]=(is_push==1?1:2);
-        putter_send[2]=(angle>90?90:angle);
         if(sp.isOpen())
+            sp.write(str);
+    }
+
+    bool endSensor::readESPData()
+    {
+        if (sp.isOpen()&&sp.available())
         {
-            usleep(100); //0.1ms
-            sp.write(putter_send,3);
+            std::string str_;
+            int num{};
+            sp.read(esp_rec,sp.available());
+            for(uint8_t i : esp_rec)
+            {
+                str_[num]=i;
+                if(i=='\n')
+                {
+                    printf("%s",str_.c_str());
+                    num=0;
+                }
+            }
             return true;
         }
         return false;
