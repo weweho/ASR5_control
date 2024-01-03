@@ -17,7 +17,7 @@ public:
     bool USB0isOpen();
     bool getSensorData(double *value);
     bool readESPData();
-    void send_string(const char *str);
+    bool send_string(const char *str);
 
 private:
     serial::Serial sp;

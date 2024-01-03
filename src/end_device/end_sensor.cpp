@@ -63,10 +63,14 @@ namespace end_sensor
         return false;
     }
 
-    void endSensor::send_string(const char *str)
+    bool endSensor::send_string(const char *str)
     {
         if(sp.isOpen())
+        {
             sp.write(str);
+            return true;
+        }
+        return false;
     }
 
     bool endSensor::readESPData()
@@ -76,7 +80,8 @@ namespace end_sensor
         {
             std::string str_;
             sp.read(esp_rec,150);
-            printf("%s",esp_rec.c_str());
+            ROS_INFO("%s",esp_rec.c_str());
+            return true;
         }
         return false;
     }
