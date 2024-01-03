@@ -95,6 +95,7 @@ namespace end_effector
     {
         if(hasRecData())
             usleep(100); //0.1ms
+        speed=(speed>=0?speed:0);
         VCI_CAN_OBJ send[1];
         send[0].ID = 321+motor_ip; //帧ID
         send[0].SendType = 0; //发送帧类型：0为正常发送
