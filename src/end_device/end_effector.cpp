@@ -56,9 +56,8 @@ namespace end_effector
     }
 
     bool endEffector::hasRecData() const {
-        unsigned int reclen_;
         VCI_CAN_OBJ rec_[50];
-        if((reclen_=(VCI_Receive(nDeviceType,nDeviceInd,nCANInd,rec_,50,100)))>= 1)//调用接收函数，如果有数据，则进行处理
+        if(((VCI_Receive(nDeviceType, nDeviceInd, nCANInd, rec_, 50, 100))) >= 1)//调用接收函数，如果有数据，则进行处理
             return true;
         else
             return false;
@@ -101,11 +100,10 @@ namespace end_effector
     }
 
 
-    bool endEffector::sendAngleCommand(int motor_ip, int speed, int angle) const
+    bool endEffector::sendAngleCommand(int motor_ip, uint16_t speed, int32_t angle) const
     {
         if(hasRecData())
             usleep(100); //0.1ms
-        speed=(speed>=0?speed:0);
         VCI_CAN_OBJ send[1];
         send[0].ID = 321+motor_ip; //帧ID
         send[0].SendType = 0; //发送帧类型：0为正常发送
@@ -134,7 +132,7 @@ namespace end_effector
         }
     }
 
-    bool endEffector::sendSpeedCommand(int motor_ip, int speed) const
+    bool endEffector::sendSpeedCommand(int motor_ip, int32_t speed) const
     {
         if(hasRecData())
             usleep(100); //0.1ms
@@ -191,11 +189,11 @@ namespace end_effector
             if(receiveData(send,rec))
             {
                 ROS_INFO_ONCE("send read MotorData command succeed\r\n");
-                motor_data->temp=rec[0].Data[1];                               //温度
-                motor_data->iq=(rec[0].Data[3] << 8) | rec[0].Data[2];         //电流
-                motor_data->speed=(rec[0].Data[5] << 8) | rec[0].Data[4];      //速度
-                motor_data->encoder=(rec[0].Data[7] << 8) | rec[0].Data[6];    //位置
-                ROS_INFO("temp:%d,iq:%d,speed:%d,encoder:%d",motor_data->temp,motor_data->iq,motor_data->speed,motor_data->encoder);
+                motor_data->temp=rec[0].Data[1];                               //温度，1℃/LSB
+                motor_data->iq=(rec[0].Data[3] << 8) | rec[0].Data[2];         //电流，16.1mA/LSB
+                motor_data->speed=(rec[0].Data[5] << 8) | rec[0].Data[4];      //速度，1dps/LSB
+                motor_data->encoder=(rec[0].Data[7] << 8) | rec[0].Data[6];    //位置，0.022°/LSB
+                ROS_INFO("temp:%d ℃, iq:%f mA, speed:%d dps, encoder:%f °",motor_data->temp,(double)motor_data->iq*16.1,motor_data->speed,(double)motor_data->encoder*0.022);
                 return true;
             }
         }

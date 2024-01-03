@@ -34,8 +34,8 @@ public:
     bool readMotorData(int motor_ip ,MOTER_DATA *motor_data) const;
     bool readPidParam(int motor_ip, PID *pid) const;
     bool writePidToRAM(int motor_ip,PID pid) const;
-    bool sendAngleCommand(int motor_ip,int speed, int angle) const;
-    bool sendSpeedCommand(int motor_ip,int speed) const;
+    bool sendAngleCommand(int motor_ip, uint16_t speed, int32_t angle) const;
+    bool sendSpeedCommand(int motor_ip,int32_t speed) const;
     bool readRawData() const;
 
 private:
