@@ -36,9 +36,9 @@ public:
     bool writePidToRAM(int motor_ip,PID pid) const;
     bool sendAngleCommand(int motor_ip,int speed, int angle) const;
     bool sendSpeedCommand(int motor_ip,int speed) const;
+    bool readRawData() const;
 
 private:
-    static void printfRec(VCI_CAN_OBJ *rec,unsigned int reclen) ;
     bool hasRecData() const;
     bool receiveData(VCI_CAN_OBJ *send,VCI_CAN_OBJ *rec) const;
     int nDeviceType = 4; //device type：CANalyst-II(4)

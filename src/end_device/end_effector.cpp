@@ -55,16 +55,6 @@ namespace end_effector
         }
     }
 
-    void endEffector::printfRec(VCI_CAN_OBJ *rec,unsigned int reclen)
-    {
-        printf("reclen_:%d,data:0x",reclen);
-        for (int j = 0; j < rec[0].DataLen; j++)
-        {
-            printf(" %02X", rec[0].Data[j]); //%02X表示用2个位置数据一个16进制数
-        }
-        printf("\n");
-    }
-
     bool endEffector::hasRecData() const {
         unsigned int reclen_;
         VCI_CAN_OBJ rec_[50];
@@ -82,7 +72,6 @@ namespace end_effector
         {
             for(int i=0; i < reclen_; i++)
             {
-//                printfRec(&rec_[i],reclen_);
                 if(rec_[i].Data[0]==send[0].Data[0]&&rec_[i].ID==send[0].ID)
                     rec[0]=rec_[i];
             }
@@ -90,6 +79,27 @@ namespace end_effector
         }
         return false;
     }
+
+    bool endEffector::readRawData() const
+    {
+        unsigned int reclen_;
+        VCI_CAN_OBJ rec_[50];
+        if((reclen_=(VCI_Receive(nDeviceType,nDeviceInd,nCANInd,rec_,50,100)))>= 1)//调用接收函数，如果有数据，则进行处理
+        {
+            for(int i=0; i < reclen_; i++)
+            {
+                printf("reclen_:%d,data:0x",reclen_);
+                for (int j = 0; j < rec_[i].DataLen; j++)
+                {
+                    printf(" %02X", rec_[i].Data[j]); //%02X表示用2个位置数据一个16进制数
+                }
+                printf("\n");
+            }
+            return true;
+        }
+        return false;
+    }
+
 
     bool endEffector::sendAngleCommand(int motor_ip, int speed, int angle) const
     {
