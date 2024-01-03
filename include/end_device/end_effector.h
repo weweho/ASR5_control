@@ -34,7 +34,8 @@ public:
     bool readMotorData(int motor_ip ,MOTER_DATA *motor_data) const;
     bool readPidParam(int motor_ip, PID *pid) const;
     bool writePidToRAM(int motor_ip,PID pid) const;
-    bool sendAngleCommand(int motor_ip,short speed, int angle) const;
+    bool sendAngleCommand(int motor_ip,int speed, int angle) const;
+    bool sendSpeedCommand(int motor_ip,int speed) const;
 
 private:
     static void printfRec(VCI_CAN_OBJ *rec,unsigned int reclen) ;
