@@ -21,33 +21,32 @@ int last_state{};
 
 void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor, int *state)
 {
-    if(*state!=last_state)
-    {
-        ROS_INFO("NOW STATE:%d\r\n",*state);
-        last_state=*state;
-    }
-
     switch(*state)
     {
         case INIT_DEVICE:
         {
             int tc_speed_=30;
-            double tc_angle_=-360.0;
-            if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
-            {
+            double tc_angle_=360.0;
+            if(end_sensor->send_string("1 1 45\n")
+            &&end_effector->sendAngleCommand(motor_tc,(uint16_t)(abs(tc_speed_)/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
                 *state = INSERT;
-            }
         }
         break;
         case INSERT:
         {
             int tc_speed_=-30;
-            double value_;
-            end_sensor->getSensorData(&value_);
-            if(value_>1.0)
+            int tc_angle_=-120;
+            double max_force_=1.0;
+            double min_force_=0.5;
+            double interval_second_=0.2;
+            if(end_sensor->insertDetect(max_force_,min_force_,interval_second_))
             {
-                end_effector->sendSpeedCommand(motor_tc,0);
-                *state = TWIST;
+                if(end_effector->sendSpeedCommand(motor_tc,0))
+                {
+                    usleep(1);
+                    if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(abs(tc_speed_)/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
+                        *state = TWIST;
+                }
             }
             else
                 end_effector->sendSpeedCommand(motor_tc,(int32_t)(tc_speed_/DPS2SPEED_COMMAND));
@@ -55,8 +54,12 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
         break;
         case TWIST:
         {
+            MOTOR_DATA motor_data_{};
+            end_effector->readMotorData(motor_tc,&motor_data_);
+            usleep(4);
+            end_effector->readMotorData(motor_tc,&motor_data_);
             int nz_speed_=20;
-            double nz_angle_=360.0;
+            double nz_angle_=60.0;
             int nz_times_=5;
             for(int i = 0 ; i< nz_times_*2 ; i++)
             {
@@ -68,14 +71,40 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
         break;
         case TEST:
         {
-            if(end_sensor->send_string("1 1 45\n"))
-                *state = DO_NOTHING;
+            double max_force_=1.0;
+            double min_force_=0.5;
+            double interval_second_=0.2;
+            if(end_sensor->insertDetect(max_force_,min_force_,interval_second_))
+                *state=DO_NOTHING;
         }
         break;
         default:
         {
         }
         break;
+    }
+
+    if(*state!=last_state)
+    {
+        switch(*state)
+        {
+            case 1:
+                ROS_INFO("INIT_DEVICE");
+                break;
+            case 2:
+                ROS_INFO("INSERT");
+                break;
+            case 3:
+                ROS_INFO("TWIST");
+                break;
+            case 4:
+                ROS_INFO("TEST");
+                break;
+            default:
+                ROS_INFO("DO_NOTHING");
+                break;
+        }
+        last_state=*state;
     }
 }
 
@@ -90,9 +119,6 @@ int main(int argc, char** argv)
     end_effector.initCAN1();
     int state=TEST;
     while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen())
-//    while(ros::ok()&&end_effector.CAN1isOpen())
-//    while(ros::ok()&&end_sensor.USB0isOpen())
-//    while(ros::ok())
     {
         controlEndDevice(&end_effector,&end_sensor, &state);
         r.sleep();
