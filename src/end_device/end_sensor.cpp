@@ -63,6 +63,23 @@ namespace end_sensor
         return false;
     }
 
+    bool endSensor::insertDetect(double max_force,double min_force,double interval_second)
+    {
+        double now_force_;
+        getSensorData(&now_force_);
+        if(now_force_>=max_force)
+        {
+            max_force_time=ros::Time::now().toSec();
+            ROS_INFO("max insert force,now time :%f\r\n",max_force_time);
+        }
+        if(now_force_<=min_force&&(ros::Time::now().toSec()-max_force_time)<=interval_second)
+        {
+            ROS_INFO("insert succeed!\r\n");
+            return true;
+        }
+        return false;
+    }
+
     bool endSensor::send_string(const char *str)
     {
         if(sp.isOpen())

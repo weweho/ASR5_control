@@ -16,6 +16,7 @@ public:
     bool initUSB0();
     bool USB0isOpen();
     bool getSensorData(double *value);
+    bool insertDetect(double max_force,double min_force,double interval_second);
     bool readESPData();
     bool send_string(const char *str);
 
@@ -24,6 +25,7 @@ private:
     serial::Timeout to;
     uint8_t end_sensor_send[8]{};
     uint8_t end_sensor_rec[9]{};
+    double max_force_time{};
 
 };
 
