@@ -7,7 +7,7 @@
 #include "controlcan.h"
 #include <ros/ros.h>
 
-struct MOTER_DATA{
+struct MOTOR_DATA{
     uint8_t temp;
     short iq;
     short speed;
@@ -31,7 +31,7 @@ public:
     endEffector();
     bool initCAN1() const;
     bool CAN1isOpen() const;
-    bool readMotorData(int motor_ip ,MOTER_DATA *motor_data) const;
+    bool readMotorData(int motor_ip ,MOTOR_DATA *motor_data) const;
     bool readPidParam(int motor_ip, PID *pid) const;
     bool writePidToRAM(int motor_ip,PID pid) const;
     bool sendAngleCommand(int motor_ip, uint16_t speed, int32_t angle) const;

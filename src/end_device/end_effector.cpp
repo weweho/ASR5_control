@@ -164,7 +164,7 @@ namespace end_effector
         }
     }
 
-    bool endEffector::readMotorData(int motor_ip ,MOTER_DATA *motor_data) const
+    bool endEffector::readMotorData(int motor_ip ,MOTOR_DATA *motor_data) const
     {
         if(hasRecData())
             usleep(100); //0.1ms
