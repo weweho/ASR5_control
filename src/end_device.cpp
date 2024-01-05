@@ -7,7 +7,9 @@
 #define INSERT      2
 #define TWIST       3
 #define TEST        4
-#define KEY_INPUT    5
+#define KEY_INPUT   5
+#define DEVICE_TEST 6
+#define SENSOR_TEST 7
 
 #define DPS2SPEED_COMMAND       0.01    // 0.01 dps/LSB
 #define DPS2ANGLE_COMMAND       1       // 1 dps/LSB
@@ -97,6 +99,7 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
             *state = DO_NOTHING;
         }
         break;
+
         case TEST:
         {
             double max_force_=1.0;
@@ -115,6 +118,50 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
             *state=DO_NOTHING;
         }
         break;
+
+        case DEVICE_TEST:
+        {
+            int tc_speed_=45;
+            double tc_angle_=45.0;
+            int nz_speed_=45;
+            double nz_angle_=45.0;
+            if(end_sensor->send_string("1 1 45\n"))
+            {
+                ROS_INFO("Test putter\r\n");
+                usleep(5);
+                if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
+                {
+                    ROS_INFO("Test motor_tc 1\r\n");
+                    usleep(1);
+                    if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(-tc_angle_/DEGREE2ANGLE_COMMAND)))
+                    {
+                        ROS_INFO("Test motor_tc 2\r\n");
+                        usleep(1);
+                        if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(nz_speed_/DPS2ANGLE_COMMAND),(int32_t)(nz_angle_/DEGREE2ANGLE_COMMAND)))
+                        {
+                            ROS_INFO("Test motor_nz 1\r\n");
+                            usleep(1);
+                            if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(nz_speed_/DPS2ANGLE_COMMAND),(int32_t)(-nz_angle_/DEGREE2ANGLE_COMMAND)))
+                            {
+                                ROS_INFO("Test motor_nz 2\r\n");
+                                *state=SENSOR_TEST;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        break;
+        case SENSOR_TEST:
+        {
+            MOTOR_DATA motor_tc_data_{},motor_nz_data_{};
+            double sensor_value_{};
+            end_effector->readMotorData(motor_tc,&motor_tc_data_);
+            end_effector->readMotorData(motor_nz,&motor_nz_data_);
+            end_sensor->getSensorData(&sensor_value_);
+        }
+        break;
+
         default:
         {
         }
@@ -129,10 +176,10 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
     end_effector::endEffector end_effector;
     end_sensor::endSensor end_sensor;
-    ros::Rate r(50);
+    ros::Rate r(20);
     end_sensor.initUSB0();
     end_effector.initCAN1();
-    int state_=KEY_INPUT;
+    int state_=DEVICE_TEST;
     std_msgs::Float64 sensor_value_;
     ros::Publisher value_pub = nh.advertise<std_msgs::Float64>("/sensor_value", 1000);
     while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen())
