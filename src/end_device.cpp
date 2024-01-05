@@ -103,26 +103,26 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
 
         case DEVICE_TEST:
         {
-            int tc_speed_=45;
-            double tc_angle_=45.0;
-            int nz_speed_=45;
-            double nz_angle_=45.0;
+            int tc_speed_=80;
+            double tc_angle_=120.0;
+            int nz_speed_=80;
+            double nz_angle_=120.0;
             if(end_putter->send_string("1 1 45\n"))
             {
                 ROS_INFO("Test putter\r\n");
-                usleep(5);
+                sleep(10);
                 if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
                 {
                     ROS_INFO("Test motor_tc 1\r\n");
-                    usleep(1);
+                    sleep(2);
                     if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(-tc_angle_/DEGREE2ANGLE_COMMAND)))
                     {
                         ROS_INFO("Test motor_tc 2\r\n");
-                        usleep(1);
+                        sleep(2);
                         if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(nz_speed_/DPS2ANGLE_COMMAND),(int32_t)(nz_angle_/DEGREE2ANGLE_COMMAND)))
                         {
                             ROS_INFO("Test motor_nz 1\r\n");
-                            usleep(1);
+                            sleep(2);
                             if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(nz_speed_/DPS2ANGLE_COMMAND),(int32_t)(-nz_angle_/DEGREE2ANGLE_COMMAND)))
                             {
                                 ROS_INFO("Test motor_nz 2\r\n");
@@ -137,16 +137,15 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
 
         case SENSOR_TEST:
         {
-            MOTOR_DATA motor_tc_data_{},motor_nz_data_{};
             double sensor_value_{};
-            end_effector->readMotorData(motor_tc,&motor_tc_data_);
-            end_effector->readMotorData(motor_nz,&motor_nz_data_);
             end_sensor->getSensorData(&sensor_value_);
         }
         break;
         case TEST:
         {
             end_putter->send_string("1 2 45\n");
+            end_putter->readESPData();
+            *state=DO_NOTHING;
         }
         break;
         case KEY_INPUT:
