@@ -80,27 +80,4 @@ namespace end_sensor
         return false;
     }
 
-    bool endSensor::send_string(const char *str)
-    {
-        if(sp.isOpen())
-        {
-            sp.write(str);
-            return true;
-        }
-        return false;
-    }
-
-    bool endSensor::readESPData()
-    {
-        std::string esp_rec{};
-        if (sp.isOpen()&&sp.available())
-        {
-            std::string str_;
-            sp.read(esp_rec,150);
-            ROS_INFO("%s",esp_rec.c_str());
-            return true;
-        }
-        return false;
-    }
-
 }

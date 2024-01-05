@@ -17,13 +17,14 @@
 
 #include "end_effector.h"
 #include "end_sensor.h"
+#include "end_putter.h"
 #include "std_msgs/Float64.h"
 
 int motor_nz = 0;
 int motor_tc = 1;
 int last_state{};
 
-void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor, int *state)
+void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor, end_putter::endPutter *end_putter,int *state)
 {
     if(*state!=last_state)
     {
@@ -57,7 +58,7 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
         {
             int tc_speed_=30;
             double tc_angle_=360.0;
-            if(end_sensor->send_string("1 1 45\n")
+            if(end_putter->send_string("1 1 45\n")
             &&end_effector->sendAngleCommand(motor_tc,(uint16_t)(abs(tc_speed_)/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
                 *state = INSERT;
         }
@@ -106,7 +107,7 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
             double tc_angle_=45.0;
             int nz_speed_=45;
             double nz_angle_=45.0;
-            if(end_sensor->send_string("1 1 45\n"))
+            if(end_putter->send_string("1 1 45\n"))
             {
                 ROS_INFO("Test putter\r\n");
                 usleep(5);
@@ -114,7 +115,7 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
                 {
                     ROS_INFO("Test motor_tc 1\r\n");
                     usleep(1);
-                    if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(-tc_angle_/DEGREE2ANGLE_COMMAND)))
+                    if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(-tc_angle_/DEGREE2ANGLE_COMMAND)))
                     {
                         ROS_INFO("Test motor_tc 2\r\n");
                         usleep(1);
@@ -145,8 +146,7 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
         break;
         case TEST:
         {
-            double sensor_value_{};
-            end_sensor->getSensorData(&sensor_value_);
+            end_putter->send_string("1 2 45\n");
         }
         break;
         case KEY_INPUT:
@@ -173,18 +173,17 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
     end_effector::endEffector end_effector;
     end_sensor::endSensor end_sensor;
+    end_putter::endPutter end_putter;
     ros::Rate r(20);
     end_sensor.initUSB0();
     end_effector.initCAN1();
+    end_putter.initPutter();
     int state_=TEST;
     std_msgs::Float64 sensor_value_;
     ros::Publisher value_pub = nh.advertise<std_msgs::Float64>("/sensor_value", 1000);
-//    while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen())
-    while(ros::ok()&&end_sensor.USB0isOpen())
+    while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen()&&end_putter.putterisOpen())
     {
-        end_sensor.getSensorData(&sensor_value_.data);
-        value_pub.publish(sensor_value_);
-        controlEndDevice(&end_effector,&end_sensor, &state_);
+        controlEndDevice(&end_effector,&end_sensor, &end_putter,&state_);
         r.sleep();
     }
     return 0;
