@@ -193,7 +193,7 @@ namespace end_effector
                 motor_data->iq=(rec[0].Data[3] << 8) | rec[0].Data[2];         //电流，16.1mA/LSB
                 motor_data->speed=(rec[0].Data[5] << 8) | rec[0].Data[4];      //速度，1dps/LSB
                 motor_data->encoder=(rec[0].Data[7] << 8) | rec[0].Data[6];    //位置，0.022°/LSB
-                ROS_INFO("temp:%d ℃, iq:%f mA, speed:%d dps, encoder:%f °",motor_data->temp,(double)motor_data->iq*16.1,motor_data->speed,(double)motor_data->encoder*0.022);
+                ROS_INFO("motor_ip:%d, temp:%d ℃, iq:%f mA, speed:%d dps, encoder:%f °",motor_ip,motor_data->temp,(double)motor_data->iq*16.1,motor_data->speed,(double)motor_data->encoder*0.022);
                 return true;
             }
         }
