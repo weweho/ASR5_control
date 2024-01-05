@@ -7,6 +7,7 @@
 #define INSERT      2
 #define TWIST       3
 #define TEST        4
+#define KEYINPUT    5
 
 #define DPS2SPEED_COMMAND       0.01    // 0.01 dps/LSB
 #define DPS2ANGLE_COMMAND       1       // 1 dps/LSB
@@ -14,6 +15,7 @@
 
 #include "end_effector.h"
 #include "end_sensor.h"
+#include "std_msgs/Float64.h"
 
 int motor_nz = 0;
 int motor_tc = 1;
@@ -21,6 +23,32 @@ int last_state{};
 
 void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor, int *state)
 {
+    if(*state!=last_state)
+    {
+        switch(*state)
+        {
+            case 1:
+                ROS_INFO("INIT_DEVICE");
+                break;
+            case 2:
+                ROS_INFO("INSERT");
+                break;
+            case 3:
+                ROS_INFO("TWIST");
+                break;
+            case 4:
+                ROS_INFO("TEST");
+                break;
+            case 5:
+                ROS_INFO("KEYINPUT");
+                break;
+            default:
+                ROS_INFO("DO_NOTHING");
+                break;
+        }
+        last_state=*state;
+    }
+
     switch(*state)
     {
         case INIT_DEVICE:
@@ -78,34 +106,21 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
                 *state=DO_NOTHING;
         }
         break;
+        case KEYINPUT:
+        {
+            int insert_angle_;
+            std::cout<<"请输入要刺入的角度:";
+            std::cin>>insert_angle_;
+            std::cout<<"你输入的角度是："<<insert_angle_<<std::endl;
+            *state=DO_NOTHING;
+        }
+        break;
         default:
         {
         }
         break;
     }
 
-    if(*state!=last_state)
-    {
-        switch(*state)
-        {
-            case 1:
-                ROS_INFO("INIT_DEVICE");
-                break;
-            case 2:
-                ROS_INFO("INSERT");
-                break;
-            case 3:
-                ROS_INFO("TWIST");
-                break;
-            case 4:
-                ROS_INFO("TEST");
-                break;
-            default:
-                ROS_INFO("DO_NOTHING");
-                break;
-        }
-        last_state=*state;
-    }
 }
 
 int main(int argc, char** argv)
@@ -117,10 +132,14 @@ int main(int argc, char** argv)
     ros::Rate r(50);
     end_sensor.initUSB0();
     end_effector.initCAN1();
-    int state=TEST;
+    int state_=KEYINPUT;
+    std_msgs::Float64 sensor_value_;
+    ros::Publisher value_pub = nh.advertise<std_msgs::Float64>("/sensor_value", 1000);
     while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen())
     {
-        controlEndDevice(&end_effector,&end_sensor, &state);
+        end_sensor.getSensorData(&sensor_value_.data);
+        value_pub.publish(sensor_value_);
+        controlEndDevice(&end_effector,&end_sensor, &state_);
         r.sleep();
     }
     return 0;
