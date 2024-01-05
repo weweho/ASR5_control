@@ -56,6 +56,7 @@ add_executable(end_device
         src/end_device.cpp
         src/end_device/end_effector.cpp
         src/end_device/end_sensor.cpp
+        src/end_device/file_operator.cpp
         )
 
 target_link_libraries(end_device
