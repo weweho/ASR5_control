@@ -7,7 +7,7 @@
 #define INSERT      2
 #define TWIST       3
 #define TEST        4
-#define KEYINPUT    5
+#define KEY_INPUT    5
 
 #define DPS2SPEED_COMMAND       0.01    // 0.01 dps/LSB
 #define DPS2ANGLE_COMMAND       1       // 1 dps/LSB
@@ -40,7 +40,7 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
                 ROS_INFO("TEST");
                 break;
             case 5:
-                ROS_INFO("KEYINPUT");
+                ROS_INFO("KEY_INPUT");
                 break;
             default:
                 ROS_INFO("DO_NOTHING");
@@ -106,7 +106,7 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
                 *state=DO_NOTHING;
         }
         break;
-        case KEYINPUT:
+        case KEY_INPUT:
         {
             int insert_angle_;
             std::cout<<"请输入要刺入的角度:";
@@ -132,7 +132,7 @@ int main(int argc, char** argv)
     ros::Rate r(50);
     end_sensor.initUSB0();
     end_effector.initCAN1();
-    int state_=KEYINPUT;
+    int state_=KEY_INPUT;
     std_msgs::Float64 sensor_value_;
     ros::Publisher value_pub = nh.advertise<std_msgs::Float64>("/sensor_value", 1000);
     while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen())
