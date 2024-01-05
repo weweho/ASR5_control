@@ -17,6 +17,7 @@
 
 #include "end_effector.h"
 #include "end_sensor.h"
+#include "file_operator.h"
 #include "std_msgs/Float64.h"
 
 int motor_nz = 0;
@@ -176,7 +177,11 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
     end_effector::endEffector end_effector;
     end_sensor::endSensor end_sensor;
+    file_operator::fileOperator file_operator;
     ros::Rate r(20);
+    std::vector<std::string> string;
+    file_operator.writeToTXT(10.0,1.0,1.0);
+    file_operator.readToTXT(&string);
     end_sensor.initUSB0();
     end_effector.initCAN1();
     int state_=DEVICE_TEST;
