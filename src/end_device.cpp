@@ -100,25 +100,6 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
         }
         break;
 
-        case TEST:
-        {
-            double max_force_=1.0;
-            double min_force_=0.5;
-            double interval_second_=0.2;
-            if(end_sensor->insertDetect(max_force_,min_force_,interval_second_))
-                *state=DO_NOTHING;
-        }
-        break;
-        case KEY_INPUT:
-        {
-            int insert_angle_;
-            std::cout<<"请输入要刺入的角度:";
-            std::cin>>insert_angle_;
-            std::cout<<"你输入的角度是："<<insert_angle_<<std::endl;
-            *state=DO_NOTHING;
-        }
-        break;
-
         case DEVICE_TEST:
         {
             int tc_speed_=45;
@@ -152,6 +133,7 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
             }
         }
         break;
+
         case SENSOR_TEST:
         {
             MOTOR_DATA motor_tc_data_{},motor_nz_data_{};
@@ -159,6 +141,21 @@ void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSen
             end_effector->readMotorData(motor_tc,&motor_tc_data_);
             end_effector->readMotorData(motor_nz,&motor_nz_data_);
             end_sensor->getSensorData(&sensor_value_);
+        }
+        break;
+        case TEST:
+        {
+            double sensor_value_{};
+            end_sensor->getSensorData(&sensor_value_);
+        }
+        break;
+        case KEY_INPUT:
+        {
+            int insert_angle_;
+            std::cout<<"请输入要刺入的角度:";
+            std::cin>>insert_angle_;
+            std::cout<<"你输入的角度是："<<insert_angle_<<std::endl;
+            *state=DO_NOTHING;
         }
         break;
 
@@ -179,10 +176,11 @@ int main(int argc, char** argv)
     ros::Rate r(20);
     end_sensor.initUSB0();
     end_effector.initCAN1();
-    int state_=DEVICE_TEST;
+    int state_=TEST;
     std_msgs::Float64 sensor_value_;
     ros::Publisher value_pub = nh.advertise<std_msgs::Float64>("/sensor_value", 1000);
-    while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen())
+//    while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen())
+    while(ros::ok()&&end_sensor.USB0isOpen())
     {
         end_sensor.getSensorData(&sensor_value_.data);
         value_pub.publish(sensor_value_);
