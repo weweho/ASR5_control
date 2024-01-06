@@ -103,7 +103,7 @@ namespace end_effector
     bool endEffector::sendAngleCommand(int motor_ip, uint16_t speed, int32_t angle) const
     {
         if(hasRecData())
-            usleep(100); //0.1ms
+            usleep(150); //0.15ms，算出来的不是瞎写的
         VCI_CAN_OBJ send[1];
         send[0].ID = 321+motor_ip; //帧ID
         send[0].SendType = 0; //发送帧类型：0为正常发送
@@ -121,7 +121,7 @@ namespace end_effector
 
         if(VCI_Transmit(nDeviceType, nDeviceInd, nCANInd, send, 1))
         {
-            usleep(100); //0.1ms
+            usleep(150);
             ROS_INFO_ONCE("send angle command succeed\r\n");
             return true;
         }
@@ -135,7 +135,7 @@ namespace end_effector
     bool endEffector::sendSpeedCommand(int motor_ip, int32_t speed) const
     {
         if(hasRecData())
-            usleep(100); //0.1ms
+            usleep(150);
         VCI_CAN_OBJ send[1];
         send[0].ID = 321+motor_ip; //帧ID
         send[0].SendType = 0; //发送帧类型：0为正常发送
@@ -153,7 +153,7 @@ namespace end_effector
 
         if(VCI_Transmit(nDeviceType, nDeviceInd, nCANInd, send, 1))
         {
-            usleep(100); //0.1ms
+            usleep(150);
             ROS_INFO_ONCE("send speed command succeed\r\n");
             return true;
         }
@@ -167,7 +167,7 @@ namespace end_effector
     bool endEffector::readMotorData(int motor_ip ,MOTOR_DATA *motor_data) const
     {
         if(hasRecData())
-            usleep(100); //0.1ms
+            usleep(150);
         VCI_CAN_OBJ send[1];
         VCI_CAN_OBJ rec[1];
         send[0].ID = 321+motor_ip; //帧ID
@@ -185,7 +185,7 @@ namespace end_effector
         send[0].Data[7] = 0x00;
         if(VCI_Transmit(nDeviceType, nDeviceInd, nCANInd, send, 1))
         {
-            usleep(100); //0.1ms
+            usleep(150);
             if(receiveData(send,rec))
             {
                 ROS_INFO_ONCE("send read MotorData command succeed\r\n");
@@ -205,7 +205,7 @@ namespace end_effector
     bool endEffector::readPidParam(int motor_ip, PID *pid) const
     {
         if(hasRecData())
-            usleep(100); //0.1ms
+            usleep(150);
         VCI_CAN_OBJ send[1];
         VCI_CAN_OBJ rec[1];
         send[0].ID = 321+motor_ip; //帧ID
@@ -224,7 +224,7 @@ namespace end_effector
 
         if(VCI_Transmit(nDeviceType, nDeviceInd, nCANInd, send, 1))
         {
-            usleep(100); //0.1ms
+            usleep(150);
             if(receiveData(send,rec))
             {
                 ROS_INFO_ONCE("send read PidData command succeed\r\n");
@@ -264,7 +264,7 @@ namespace end_effector
 
         if(VCI_Transmit(nDeviceType, nDeviceInd, nCANInd, send, 1))
         {
-            usleep(100); //0.1ms
+            usleep(150);
             ROS_INFO_ONCE("set pid succeed\r\n");
             return true;
         }
