@@ -9,7 +9,10 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <streambuf>
+#include <sstream>
 
+using namespace std;
 namespace file_operator
 {
 class fileOperator
@@ -17,11 +20,14 @@ class fileOperator
 public:
     fileOperator();
     void writeToTXT(double max_force,double min_force,double interval_time);
-    void readToTXT(std::vector<std::string>* v1);
+    void readTXT(vector<std::string>* v1);
+    void writeToExcel(double max_force,double min_force,double interval_time);
+    void readExcel(vector<std::string>* v1);
+    static void getVectorData(vector<std::string> v1,int column_num);
 
 private:
-    std::ofstream ofs;
-    std::ifstream ifs;
+    std::ofstream txt_ofs,excel_ofs;
+    std::ifstream txt_ifs,excel_ifs;
 };
 
 } // fille_operator

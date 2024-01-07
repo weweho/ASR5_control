@@ -180,8 +180,9 @@ int main(int argc, char** argv)
     file_operator::fileOperator file_operator;
     ros::Rate r(20);
     std::vector<std::string> string;
-    file_operator.writeToTXT(10.0,1.0,1.0);
-    file_operator.readToTXT(&string);
+    file_operator.writeToExcel(10.0,1.0,1.0);
+    file_operator.readExcel(&string);
+    file_operator::fileOperator::getVectorData(string,3);
     end_sensor.initUSB0();
     end_effector.initCAN1();
     int state_=DEVICE_TEST;
