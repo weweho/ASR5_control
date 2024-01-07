@@ -19,11 +19,11 @@ class fileOperator
 {
 public:
     fileOperator();
-    void writeToTXT(double max_force,double min_force,double interval_time);
+    void writeToTXT(double data[], int size);
     void readTXT(vector<std::string>* v1);
-    void writeToExcel(double max_force,double min_force,double interval_time);
+    void writeToExcel(double data[], int size);
     void readExcel(vector<std::string>* v1);
-    static void getVectorData(vector<std::string> v1,int column_num);
+    static void getVectorData(vector<std::string> v1,int column_num,bool ignore_first_row);
 
 private:
     std::ofstream txt_ofs,excel_ofs;

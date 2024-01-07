@@ -10,20 +10,24 @@ namespace file_operator
     fileOperator::fileOperator()
     = default;
 
-    void fileOperator::writeToTXT(double max_force,double min_force,double interval_time)
+    void fileOperator::writeToTXT(double data[], int size)
     {
         txt_ofs.open("src/ASR5_control/file.txt",ios::app);
-        txt_ofs<<"max_force:"<<max_force<<endl;
-        txt_ofs<<"min_force:"<<min_force<<endl;
-        txt_ofs<<"interval_time:"<<interval_time<<endl;
+        for(int i=0; i<size; i++)
+            txt_ofs<<"data "<<i<<":"<<data[i]<<endl;
         txt_ofs.close();
     }
 
-    void fileOperator::writeToExcel(double max_force,double min_force,double interval_time)
+    void fileOperator::writeToExcel(double data[], int size)
     {
         excel_ofs.open("src/ASR5_control/file.csv", ios::app);
-        excel_ofs << "最大值"   << "," << "最小值"  << "," << "间隔"         <<endl;
-        excel_ofs << max_force << "," << min_force<< "," << interval_time << endl;
+        for(int i=0; i<size; i++)
+        {
+            if(i==size-1)
+                excel_ofs << data[i]<< endl;
+            else
+                excel_ofs << data[i] << ",";
+        }
         excel_ofs.close();
     }
 
@@ -54,9 +58,9 @@ namespace file_operator
             v1->push_back(temp);
     }
 
-    void fileOperator::getVectorData(vector<std::string> v1,int column_num)
+    void fileOperator::getVectorData(vector<std::string> v1,int column_num,bool ignore_first_row)
     {
-        for (auto it = v1.begin()+1; it != v1.end(); it++)        //遍历文件中的每一行数据
+        for (auto it = v1.begin()+(ignore_first_row?1:0); it != v1.end(); it++)        //遍历文件中的每一行数据
         {
             string str;
             istringstream istr(*it);
