@@ -10,17 +10,17 @@ namespace file_operator
     fileOperator::fileOperator()
     = default;
 
-    void fileOperator::writeToTXT(double data[], int size)
+    void fileOperator::writeToTXT(double data[], int size, const string& file_name)
     {
-        txt_ofs.open("src/ASR5_control/file.txt",ios::app);
+        txt_ofs.open("src/ASR5_control/"+file_name,ios::app);
         for(int i=0; i<size; i++)
             txt_ofs<<"data "<<i<<":"<<data[i]<<endl;
         txt_ofs.close();
     }
 
-    void fileOperator::writeToExcel(double data[], int size)
+    void fileOperator::writeToExcel(double data[], int size, const string& file_name)
     {
-        excel_ofs.open("src/ASR5_control/file.csv", ios::app);
+        excel_ofs.open("src/ASR5_control/"+file_name, ios::app);
         for(int i=0; i<size; i++)
         {
             if(i==size-1)
@@ -31,9 +31,9 @@ namespace file_operator
         excel_ofs.close();
     }
 
-    void fileOperator::readTXT(vector<string> *v_string)
+    void fileOperator::readTXT(vector<string> *v_string, const string& file_name)
     {
-        txt_ifs.open("src/ASR5_control/file.txt",ios::in);
+        txt_ifs.open("src/ASR5_control/"+file_name,ios::in);
         string s_;
         if (!txt_ifs.is_open())
         {
@@ -45,9 +45,9 @@ namespace file_operator
         txt_ifs.close();
     }
 
-    void fileOperator::readExcel(vector<string>* v1)
+    void fileOperator::readExcel(vector<string>* v1, const string& file_name)
     {
-        excel_ifs.open("src/ASR5_control/file.csv", ios::in);
+        excel_ifs.open("src/ASR5_control/"+file_name, ios::in);
         string temp;
         if (!excel_ifs.is_open())
         {
