@@ -6,6 +6,10 @@
 
 namespace fsm
 {
+    FSM::FSM()
+    {
+    }
+
     void FSM::infoState(const int *state)
     {
         if(*state!=last_state)
@@ -32,6 +36,12 @@ namespace fsm
                     break;
                 case 7:
                     ROS_INFO("SENSOR_TEST");
+                    break;
+                case 8:
+                    ROS_INFO("PULL");
+                    break;
+                case 9:
+                    ROS_INFO("READ_MOTOR");
                     break;
                 default:
                     ROS_INFO("DO_NOTHING");
@@ -173,4 +183,79 @@ namespace fsm
         }
     }
 
-}
+    void FSM::testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip , int encoder_data)
+    {
+        infoState(state);
+        switch(*state)
+        {
+            case INSERT:
+            {
+                int tc_speed_=80;
+                if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(-encoder_data)))
+                    *state=KEY_INPUT;
+            }
+            break;
+            case PULL:
+            {
+                int tc_speed_=80;
+                if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(encoder_data)))
+                    *state=KEY_INPUT;
+            }
+            break;
+            case KEY_INPUT:
+            {
+                int state_;
+                std::cout<<"按8拔出，按2插入"<<std::endl;
+                std::cin>>state_;
+                int64_t now_angle_{};
+                int64_t diff_angle_[2]{};
+                if(end_effector->readMotorAngle(motor_ip,&now_angle_))
+                {
+                    if(state_==PULL|state_==INSERT)
+                    {
+                        ROS_INFO("当前角度 :%ld ; 上一次的角度: %ld \r\n",now_angle_,last_angle);
+                        if(state_==PULL) //此时逆时针转，对于motor_angle来说是减小（说明书上说的）
+                        {
+                            diff_angle_[0]=8;
+                            diff_angle_[1]=last_angle-now_angle_;
+                            ROS_INFO("下压时的角度差值：%ld",diff_angle_[1]);
+                        }
+                        else //此时顺时针转，对于motor_angle来说是增加
+                        {
+                            diff_angle_[0]=2;
+                            diff_angle_[1]=now_angle_-last_angle;
+                            ROS_INFO("上拉时的角度差值：%ld",diff_angle_[1]);
+                        }
+                        file_operator->writeToExcel(&diff_angle_,2,"encoder.csv");
+                        last_angle=now_angle_;
+                        *state=state_;
+                    }
+                    else
+                    {
+                        *state=DO_NOTHING;
+                        ROS_INFO("不知道你按了啥，我先退了");
+                    }
+                }
+                else
+                    ROS_INFO("没收到电机回复，再按一次");
+            }
+            break;
+            default:
+            {
+            }
+            break;
+        }
+    }
+
+    void FSM::testSensorData(end_sensor::endSensor *end_sensor, file_operator::fileOperator *file_operator, int freq)
+    {
+        double sensor_data_[2]{};
+        if(end_sensor->getSensorData(&sensor_data_[1]))
+        {
+            sensor_data_[0]+=1.0/freq;
+            file_operator->writeToExcel(&sensor_data_,2,"file.csv");
+        }
+    }
+
+
+}//fsm

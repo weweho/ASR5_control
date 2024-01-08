@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     int motor_tc_ = 1;
     while(ros::ok()&&end_effector.CAN1isOpen())
     {
-        fsm.testMotorAccuracy(&end_effector,&file_operator,&state_,motor_tc_);
+        fsm.testMotorAccuracy(&end_effector,&file_operator,&state_,motor_tc_,25236);
         r.sleep();
     }
     return 0;

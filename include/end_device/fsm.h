@@ -13,6 +13,8 @@
 #define KEY_INPUT   5
 #define DEVICE_TEST 6
 #define SENSOR_TEST 7
+#define PULL        8
+#define READ_MOTOR  9
 
 #define DPS2SPEED_COMMAND       0.01    // 0.01 dps/LSB
 #define DPS2ANGLE_COMMAND       1       // 1 dps/LSB
@@ -28,13 +30,17 @@ namespace fsm
 class FSM
 {
 public:
+    FSM();
     void controlEndDevice(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor, end_putter::endPutter *end_putter, file_operator::fileOperator *file_operator, int *state,int motor_nz,int motor_tc);
     void testEndDevice(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor, end_putter::endPutter *end_putter, int *state,int motor_nz,int motor_tc);
+    void testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip, int encoder_data);
+    void testSensorData(end_sensor::endSensor *end_sensor,file_operator::fileOperator *file_operator, int freq);
 
 private:
     int last_state{};
+    int64_t last_angle{};
+    double sensor_time{};
     void infoState(const int *state);
-
 };
 
 }
