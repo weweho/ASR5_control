@@ -3,13 +3,14 @@
 //
 
 #include "fsm.h"
-#include "std_msgs/Float64.h"
 
 int main(int argc, char** argv)
 {
     ros::init(argc, argv,"end_device");
     ros::NodeHandle nh;
     ros::Rate r(20);
+    setlocale(LC_ALL, "");
+    setlocale(LC_CTYPE, "zh_CN.utf8");
 
     end_effector::endEffector end_effector;
     end_sensor::endSensor end_sensor;
@@ -22,10 +23,8 @@ int main(int argc, char** argv)
     end_putter.initPutter();
 
     int state_=KEY_INPUT;
-    int motor_nz_ = 0;
     int motor_tc_ = 1;
-    std_msgs::Float64 sensor_value_;
-    ros::Publisher value_pub = nh.advertise<std_msgs::Float64>("/sensor_value", 1000);
+    int motor_nz_ = 0;
     while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen()&&end_putter.putterisOpen())
     {
         fsm.testEndDevice(&end_effector,&end_sensor, &end_putter, &state_,motor_nz_,motor_tc_);
