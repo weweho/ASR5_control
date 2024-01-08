@@ -10,29 +10,6 @@ namespace file_operator
     fileOperator::fileOperator()
     = default;
 
-    template <typename T>
-    void fileOperator::writeToTXT(T data[], int size, const string& file_name)
-    {
-        txt_ofs.open("src/ASR5_control/"+file_name,ios::app);
-        for(int i=0; i<size; i++)
-            txt_ofs<<"data "<<i<<":"<<data[i]<<endl;
-        txt_ofs.close();
-    }
-
-    template <typename T>
-    void fileOperator::writeToExcel(T data[], int size, const string& file_name)
-    {
-        excel_ofs.open("src/ASR5_control/"+file_name, ios::app);
-        for(int i=0; i<size; i++)
-        {
-            if(i==size-1)
-                excel_ofs << data[i]<< endl;
-            else
-                excel_ofs << data[i] << ",";
-        }
-        excel_ofs.close();
-    }
-
     void fileOperator::readTXT(vector<string> *v_string, const string& file_name)
     {
         txt_ifs.open("src/ASR5_control/"+file_name,ios::in);
