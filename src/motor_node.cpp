@@ -18,11 +18,13 @@ int main(int argc, char** argv)
 
     int state_=KEY_INPUT;
     int motor_tc_ = 1;
+    int motor_nz_ = 0;
     int target_angle_=25263;
     int duration_=1;
+    double no_load_=1.5;
     while(ros::ok()&&end_effector.CAN1isOpen())
     {
-        fsm.testMotorAccuracy(&end_effector,&file_operator,&state_,motor_tc_,target_angle_,(target_angle_*1.5)/100.0,duration_);
+        fsm.testMotorAccuracy(&end_effector,&file_operator,&state_,motor_tc_,target_angle_,(target_angle_*no_load_)/100.0,duration_);
         r.sleep();
     }
     return 0;
