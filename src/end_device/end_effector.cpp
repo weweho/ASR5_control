@@ -18,6 +18,19 @@ namespace end_effector
         }
     }
 
+
+    int64_t endEffector::signExtend(int64_t value, int bitLength) {
+        // 生成一个位掩码，将除了最高位之外的位都设置为 1
+        int64_t signMask = static_cast<int64_t>(1) << (bitLength - 1);
+
+        // 如果最高位为 1，说明原始值是负数，进行符号扩展
+        if (value & signMask) {
+            value |= ~((static_cast<int64_t>(1) << bitLength) - 1);
+        }
+
+        return value;
+    }
+
     bool endEffector::initCAN1() const
     {
         //CAN config
@@ -304,8 +317,7 @@ namespace end_effector
         return false;
     }
 
-    bool endEffector::readMotorAngle(int motor_ip,int64_t *angle) const
-    {
+    bool endEffector::readMotorAngle(int motor_ip,int64_t *angle) {
         if(hasRecData())
             usleep(150);
         VCI_CAN_OBJ send[1];
@@ -328,11 +340,13 @@ namespace end_effector
             usleep(150);
             if(receiveData(send,rec))
             {
+                int64_t angle_raw_{};
                 ROS_INFO_ONCE("send read MotorAngle command succeed\r\n");
-                *angle = (int64_t)rec[0].Data[1]        |((int64_t)rec[0].Data[2] << 8)|
-                         ((int64_t)rec[0].Data[3] << 16)|((int64_t)rec[0].Data[4] << 24)|
-                         ((int64_t)rec[0].Data[5] << 32)|((int64_t)rec[0].Data[6] << 40)|
-                         ((int64_t)rec[0].Data[7] << 48);
+                angle_raw_ = (int64_t)rec[0].Data[1]        |((int64_t)rec[0].Data[2] << 8)|
+                             ((int64_t)rec[0].Data[3] << 16)|((int64_t)rec[0].Data[4] << 24)|
+                             ((int64_t)rec[0].Data[5] << 32)|((int64_t)rec[0].Data[6] << 40)|
+                             ((int64_t)rec[0].Data[7] << 48);
+                *angle=signExtend(angle_raw_, 56);
                 ROS_INFO("motor angle: %ld",*angle);
                 return true;
             }

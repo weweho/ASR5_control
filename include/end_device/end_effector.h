@@ -32,7 +32,7 @@ public:
     bool initCAN1() const;
     bool CAN1isOpen() const;
     bool readMotorData(int motor_ip ,MOTOR_DATA *motor_data) const;
-    bool readMotorAngle(int motor_ip,int64_t *angle) const;
+    bool readMotorAngle(int motor_ip,int64_t *angle);
     bool readPidParam(int motor_ip, PID *pid) const;
     bool writePidToRAM(int motor_ip,PID pid) const;
     bool sendAngleCommand(int motor_ip, uint16_t speed, int32_t angle) const;
@@ -41,6 +41,7 @@ public:
     bool setZeroPoint(int motor_ip) const;
 
 private:
+    int64_t signExtend(int64_t value, int bitLength) ;
     bool hasRecData() const;
     bool receiveData(VCI_CAN_OBJ *send,VCI_CAN_OBJ *rec) const;
     int nDeviceType = 4; //device type：CANalyst-II(4)
