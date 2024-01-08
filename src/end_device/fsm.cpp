@@ -216,17 +216,17 @@ namespace fsm
                         ROS_INFO("当前角度 :%ld ; 上一次的角度: %ld \r\n",now_angle_,last_angle);
                         if(state_==PULL) //此时逆时针转，对于motor_angle来说是减小（说明书上说的）
                         {
-                            diff_angle_[0]=8;
+                            diff_angle_[0]=8.0;
                             diff_angle_[1]=last_angle-now_angle_;
                             ROS_INFO("下压时的角度差值：%ld",diff_angle_[1]);
                         }
                         else //此时顺时针转，对于motor_angle来说是增加
                         {
-                            diff_angle_[0]=2;
+                            diff_angle_[0]=2.0;
                             diff_angle_[1]=now_angle_-last_angle;
                             ROS_INFO("上拉时的角度差值：%ld",diff_angle_[1]);
                         }
-                        file_operator->writeToExcel(&diff_angle_,2,"encoder.csv");
+                        file_operator->writeToExcel<int64_t>(diff_angle_,2,"encoder.csv");
                         last_angle=now_angle_;
                         *state=state_;
                     }
@@ -253,7 +253,7 @@ namespace fsm
         if(end_sensor->getSensorData(&sensor_data_[1]))
         {
             sensor_data_[0]+=1.0/freq;
-            file_operator->writeToExcel(&sensor_data_,2,"file.csv");
+            file_operator->writeToExcel<double>(sensor_data_,2,"file.csv");
         }
     }
 
