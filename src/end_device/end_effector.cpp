@@ -190,9 +190,9 @@ namespace end_effector
             {
                 ROS_INFO_ONCE("send read MotorData command succeed\r\n");
                 motor_data->temp=rec[0].Data[1];                               //温度，1℃/LSB
-                motor_data->iq=(rec[0].Data[3] << 8) | rec[0].Data[2];         //电流，16.1mA/LSB
-                motor_data->speed=(rec[0].Data[5] << 8) | rec[0].Data[4];      //速度，1dps/LSB
-                motor_data->encoder=(rec[0].Data[7] << 8) | rec[0].Data[6];    //位置，0.022°/LSB
+                motor_data->iq=((short)rec[0].Data[3] << 8) | rec[0].Data[2];         //电流，16.1mA/LSB
+                motor_data->speed=((short)rec[0].Data[5] << 8) | rec[0].Data[4];      //速度，1dps/LSB
+                motor_data->encoder=((short)rec[0].Data[7] << 8) | rec[0].Data[6];    //位置，0.022°/LSB
                 ROS_INFO("motor_ip:%d, temp:%d ℃, iq:%f mA, speed:%d dps, encoder:%f °",motor_ip,motor_data->temp,(double)motor_data->iq*16.1,motor_data->speed,(double)motor_data->encoder*0.022);
                 return true;
             }
@@ -329,10 +329,10 @@ namespace end_effector
             if(receiveData(send,rec))
             {
                 ROS_INFO_ONCE("send read MotorAngle command succeed\r\n");
-                *angle = rec[0].Data[1]        |(rec[0].Data[2] << 8)|
-                         (rec[0].Data[3] << 16)|(rec[0].Data[4] << 24)|
-                         (rec[0].Data[5] << 32)|(rec[0].Data[6] << 40)|
-                         (rec[0].Data[7] << 48);
+                *angle = (int64_t)rec[0].Data[1]        |((int64_t)rec[0].Data[2] << 8)|
+                         ((int64_t)rec[0].Data[3] << 16)|((int64_t)rec[0].Data[4] << 24)|
+                         ((int64_t)rec[0].Data[5] << 32)|((int64_t)rec[0].Data[6] << 40)|
+                         ((int64_t)rec[0].Data[7] << 48);
                 ROS_INFO("motor angle: %ld",*angle);
                 return true;
             }
