@@ -198,7 +198,7 @@ namespace end_effector
             }
         }
         else
-            ROS_INFO_ONCE("read encoder fail!\r\n");
+            ROS_INFO_ONCE("read MotorData fail!\r\n");
         return false;
     }
 
@@ -273,6 +273,73 @@ namespace end_effector
             ROS_INFO_ONCE("set pid fail!\r\n");
             return false;
         }
+    }
+
+    bool endEffector::setZeroPoint(int motor_ip) const
+    {
+        if(hasRecData())
+            usleep(150);
+        VCI_CAN_OBJ send[1];
+        VCI_CAN_OBJ rec[1];
+        send[0].ID = 321+motor_ip; //帧ID
+        send[0].SendType = 0; //发送帧类型：0为正常发送
+        send[0].RemoteFlag = 0; //0为数据帧，1为远程帧
+        send[0].ExternFlag = 0; //0为标准帧，1为拓展帧
+        send[0].DataLen = 8; //数据长度8字节
+        send[0].Data[0] = 0x19;
+        send[0].Data[1] = 0x00;
+        send[0].Data[2] = 0X00;
+        send[0].Data[3] = 0X00;
+        send[0].Data[4] = 0X00;
+        send[0].Data[5] = 0X00;
+        send[0].Data[6] = 0X00;
+        send[0].Data[7] = 0X00;
+
+        if(VCI_Transmit(nDeviceType, nDeviceInd, nCANInd, send, 1))
+        {
+            ROS_INFO("set zero point succeed\r\n");
+            return true;
+        }
+        ROS_INFO("set zero point fail!\r\n");
+        return false;
+    }
+
+    bool endEffector::readMotorAngle(int motor_ip,int64_t *angle) const
+    {
+        if(hasRecData())
+            usleep(150);
+        VCI_CAN_OBJ send[1];
+        VCI_CAN_OBJ rec[1];
+        send[0].ID = 321+motor_ip; //帧ID
+        send[0].SendType = 0; //发送帧类型：0为正常发送
+        send[0].RemoteFlag = 0; //0为数据帧，1为远程帧
+        send[0].ExternFlag = 0; //0为标准帧，1为拓展帧
+        send[0].DataLen = 8; //数据长度8字节
+        send[0].Data[0] = 0x92;
+        send[0].Data[1] = 0x00;
+        send[0].Data[2] = 0x00;
+        send[0].Data[3] = 0x00;
+        send[0].Data[4] = 0x00;
+        send[0].Data[5] = 0x00;
+        send[0].Data[6] = 0x00;
+        send[0].Data[7] = 0x00;
+        if(VCI_Transmit(nDeviceType, nDeviceInd, nCANInd, send, 1))
+        {
+            usleep(150);
+            if(receiveData(send,rec))
+            {
+                ROS_INFO_ONCE("send read MotorAngle command succeed\r\n");
+                *angle = rec[0].Data[1]        |(rec[0].Data[2] << 8)|
+                         (rec[0].Data[3] << 16)|(rec[0].Data[4] << 24)|
+                         (rec[0].Data[5] << 32)|(rec[0].Data[6] << 40)|
+                         (rec[0].Data[7] << 48);
+                ROS_INFO("motor angle: %ld",*angle);
+                return true;
+            }
+        }
+        else
+            ROS_INFO_ONCE("read MotorAngle fail!\r\n");
+        return false;
     }
 
 

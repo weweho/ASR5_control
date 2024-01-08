@@ -32,11 +32,13 @@ public:
     bool initCAN1() const;
     bool CAN1isOpen() const;
     bool readMotorData(int motor_ip ,MOTOR_DATA *motor_data) const;
+    bool readMotorAngle(int motor_ip,int64_t *angle) const;
     bool readPidParam(int motor_ip, PID *pid) const;
     bool writePidToRAM(int motor_ip,PID pid) const;
     bool sendAngleCommand(int motor_ip, uint16_t speed, int32_t angle) const;
     bool sendSpeedCommand(int motor_ip,int32_t speed) const;
     bool readRawData() const;
+    bool setZeroPoint(int motor_ip) const;
 
 private:
     bool hasRecData() const;
