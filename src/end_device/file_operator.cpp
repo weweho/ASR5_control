@@ -10,7 +10,8 @@ namespace file_operator
     fileOperator::fileOperator()
     = default;
 
-    void fileOperator::writeToTXT(double data[], int size, const string& file_name)
+    template <typename T>
+    void fileOperator::writeToTXT(T data[], int size, const string& file_name)
     {
         txt_ofs.open("src/ASR5_control/"+file_name,ios::app);
         for(int i=0; i<size; i++)
@@ -18,7 +19,8 @@ namespace file_operator
         txt_ofs.close();
     }
 
-    void fileOperator::writeToExcel(double data[], int size, const string& file_name)
+    template <typename T>
+    void fileOperator::writeToExcel(T data[], int size, const string& file_name)
     {
         excel_ofs.open("src/ASR5_control/"+file_name, ios::app);
         for(int i=0; i<size; i++)

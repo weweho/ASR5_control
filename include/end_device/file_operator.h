@@ -19,9 +19,11 @@ class fileOperator
 {
 public:
     fileOperator();
-    void writeToTXT(double data[], int size, const string& file_name);
+    template <typename T>
+    void writeToTXT(T data[], int size, const string& file_name);
+    template <typename T>
+    void writeToExcel(T data[], int size, const string& file_name);
     void readTXT(vector<std::string>* v1, const string& file_name);
-    void writeToExcel(double data[], int size, const string& file_name);
     void readExcel(vector<std::string>* v1, const string& file_name);
     static void getVectorData(vector<std::string> v1,int column_num,bool ignore_first_row);
 
