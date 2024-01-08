@@ -11,10 +11,12 @@ int main(int argc, char** argv)
     setlocale(LC_CTYPE, "zh_CN.utf8");
     int freq=20;
     ros::Rate r(freq);
+
     end_sensor::endSensor end_sensor;
     file_operator::fileOperator file_operator;
     fsm::FSM fsm;
     end_sensor.initUSB0();
+
     while(ros::ok())
     {
         fsm.testSensorData(&end_sensor, &file_operator , freq);

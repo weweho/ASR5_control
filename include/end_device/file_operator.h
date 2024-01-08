@@ -25,14 +25,14 @@ public:
     template <typename T> void writeToTXT(T data[], int size, const string& file_name)
     {
         txt_ofs.open("src/ASR5_control/"+file_name,ios::app);
-        for(int i=0; i<size-1; i++)
+        for(int i=0; i<size; i++)
             txt_ofs<<"data "<<i<<":"<<data[i]<<endl;
         txt_ofs.close();
     }
     template <typename T> void writeToExcel(T data[], int size, const string& file_name)
     {
         excel_ofs.open("src/ASR5_control/"+file_name, ios::app);
-        for(int i=0; i<size-1; i++)
+        for(int i=0; i<size; i++)
         {
             if(i==size-1)
                 excel_ofs << data[i]<< endl;

@@ -10,8 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   serial
 )
 
-find_package(Qt5 REQUIRED COMPONENTS Core)
-
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES asr5_control

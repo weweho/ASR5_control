@@ -9,15 +9,18 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
     setlocale(LC_ALL, "");
     setlocale(LC_CTYPE, "zh_CN.utf8");
-    ros::Rate r(1);
+    ros::Rate r(20);
+
     end_effector::endEffector end_effector;
     file_operator::fileOperator file_operator;
     fsm::FSM fsm;
+    end_effector.initCAN1();
+
     int state_=KEY_INPUT;
     int motor_tc_ = 1;
     while(ros::ok()&&end_effector.CAN1isOpen())
     {
-        fsm.testMotorAccuracy(&end_effector,&file_operator,&state_,motor_tc_,25236);
+        fsm.testMotorAccuracy(&end_effector,&file_operator,&state_,motor_tc_,33726);
         r.sleep();
     }
     return 0;
