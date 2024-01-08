@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv,"end_device");
+    ros::init(argc, argv,"putter_node");
     ros::NodeHandle nh;
     ros::Rate r(20);
     setlocale(LC_ALL, "");
