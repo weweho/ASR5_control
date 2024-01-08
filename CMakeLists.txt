@@ -66,3 +66,32 @@ target_link_libraries(end_device
         controlcan
         )
 
+##########sensor_node####################
+add_executable(sensor_node
+        src/sensor_node.cpp
+        src/end_device/end_effector.cpp
+        src/end_device/end_sensor.cpp
+        src/end_device/end_putter.cpp
+        src/end_device/file_operator.cpp
+        src/end_device/fsm.cpp
+        )
+
+target_link_libraries(sensor_node
+        ${catkin_LIBRARIES}
+        controlcan
+        )
+
+##########motor_node####################
+add_executable(motor_node
+        src/motor_node.cpp
+        src/end_device/end_effector.cpp
+        src/end_device/end_sensor.cpp
+        src/end_device/end_putter.cpp
+        src/end_device/file_operator.cpp
+        src/end_device/fsm.cpp
+        )
+
+target_link_libraries(motor_node
+        ${catkin_LIBRARIES}
+        controlcan
+        )
