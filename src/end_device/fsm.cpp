@@ -8,7 +8,8 @@ namespace fsm
 {
     FSM::FSM()
     {
-        last_motor_test_state=INSERT;
+        last_motor_test_state=PULL;
+        start_time=ros::Time().now().toSec();
     }
 
     void FSM::infoState(const int *state)
@@ -52,6 +53,38 @@ namespace fsm
         }
     }
 
+    bool FSM::insertDirect(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,int *insert_state,int motor_tc)
+    {
+        size_t max_size=5;
+        switch(*insert_state)
+        {
+            case 1:
+            {
+                double now_time_=ros::Time().now().toSec();
+                if(end_sensor->pressureRising((now_time_-start_time),max_size))
+                    if(end_effector->readMotorAngle(motor_tc,&encoder[0]))
+                        *insert_state=2;
+            }
+            break;
+            case 2:
+            {
+                double now_time_=ros::Time().now().toSec();
+                if(end_sensor->pressureDropping((now_time_-start_time),max_size))
+                    if(end_effector->readMotorAngle(motor_tc,&encoder[1]))
+                        *insert_state=3;
+            }
+            break;
+            case 3:
+            {
+                ROS_INFO("stop!!刺穿了！！");
+                ROS_INFO("要补偿的值：%ld",(encoder[1]-encoder[0]));
+                return true;
+            }
+
+        }
+        return false;
+    }
+
     void FSM::controlEndDevice(end_effector::endEffector *end_effector, end_sensor::endSensor *end_sensor,
                           end_putter::endPutter *end_putter, file_operator::fileOperator *file_operator,
                           int *state,int motor_nz,int motor_tc)
@@ -75,17 +108,17 @@ namespace fsm
                 double max_force_=1.0;
                 double min_force_=0.5;
                 double interval_second_=0.2;
-                if(end_sensor->insertDetect(max_force_,min_force_,interval_second_))
-                {
-                    if(end_effector->sendSpeedCommand(motor_tc,0))
-                    {
-                        usleep(1);
-                        if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(abs(tc_speed_)/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
-                            *state = TWIST;
-                    }
-                }
-                else
-                    end_effector->sendSpeedCommand(motor_tc,(int32_t)(tc_speed_/DPS2SPEED_COMMAND));
+//                if(end_sensor->insertDetect(max_force_,min_force_,interval_second_))
+//                {
+//                    if(end_effector->sendSpeedCommand(motor_tc,0))
+//                    {
+//                        usleep(1);
+//                        if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(abs(tc_speed_)/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
+//                            *state = TWIST;
+//                    }
+//                }
+//                else
+//                    end_effector->sendSpeedCommand(motor_tc,(int32_t)(tc_speed_/DPS2SPEED_COMMAND));
             }
             break;
             case TWIST:
@@ -221,13 +254,13 @@ namespace fsm
                         if(state_==PULL) //此时逆时针转，对于motor_angle来说是减小（说明书上说的）
                         {
                             diff_angle_[0]=8.0;
-                            diff_angle_[1]=(double)((last_angle-now_angle_)*0.01);
+                            diff_angle_[1]=((last_angle-now_angle_)*0.01);
                             ROS_INFO("下压时的角度差值：%f",diff_angle_[1]);
                         }
                         else //此时顺时针转，对于motor_angle来说是增加
                         {
                             diff_angle_[0]=2.0;
-                            diff_angle_[1]=(double)((now_angle_-last_angle)*0.01);
+                            diff_angle_[1]=((now_angle_-last_angle)*0.01);
                             ROS_INFO("上拉时的角度差值：%f",diff_angle_[1]);
                         }
                         file_operator->writeToExcel<double>(diff_angle_,2,"encoder.csv");
@@ -254,11 +287,10 @@ namespace fsm
 
     void FSM::testSensorData(end_sensor::endSensor *end_sensor, file_operator::fileOperator *file_operator, int freq)
     {
-        double sensor_data_[2]{};
-        if(end_sensor->getSensorData(&sensor_data_[1]))
+        if(end_sensor->getSensorData(&sensor_data[1]))
         {
-            sensor_data_[0]+=1.0/freq;
-            file_operator->writeToExcel<double>(sensor_data_,2,"force.csv");
+            sensor_data[0]+=1.0/freq;
+            file_operator->writeToExcel<double>(sensor_data,2,"force.csv");
         }
     }
 

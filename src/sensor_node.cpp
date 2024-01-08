@@ -2,6 +2,7 @@
 // Created by aung on 2024/1/7.
 //
 #include "fsm.h"
+#include "std_msgs/Float64.h"
 
 int main(int argc, char** argv)
 {
@@ -17,8 +18,12 @@ int main(int argc, char** argv)
     fsm::FSM fsm;
     end_sensor.initUSB0();
 
+    std_msgs::Float64 sensor_value_;
+    ros::Publisher value_pub = nh.advertise<std_msgs::Float64>("/sensor_value", 1000);
     while(ros::ok())
     {
+//        end_sensor.getSensorData(&sensor_value_.data);
+//        value_pub.publish(sensor_value_);
         fsm.testSensorData(&end_sensor, &file_operator , freq);
         r.sleep();
     }
