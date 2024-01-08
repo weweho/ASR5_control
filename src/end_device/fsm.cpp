@@ -8,6 +8,7 @@ namespace fsm
 {
     FSM::FSM()
     {
+        last_motor_test_state=INSERT;
     }
 
     void FSM::infoState(const int *state)
@@ -183,32 +184,35 @@ namespace fsm
         }
     }
 
-    void FSM::testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip , int encoder_data)
+    void FSM::testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip , int encoder_data ,int dps ,int duration)
     {
         infoState(state);
         switch(*state)
         {
             case INSERT:
-            {
-                int tc_speed_=80;
-                if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(-encoder_data)))
+                if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(dps/DPS2ANGLE_COMMAND),(int32_t)(-encoder_data)))
+                {
+                    sleep(duration);
                     *state=KEY_INPUT;
-            }
+                }
             break;
             case PULL:
-            {
-                int tc_speed_=80;
-                if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(tc_speed_/DPS2ANGLE_COMMAND),(int32_t)(encoder_data)))
+                if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(dps/DPS2ANGLE_COMMAND),(int32_t)(encoder_data)))
+                {
+                    sleep(duration);
                     *state=KEY_INPUT;
-            }
+                }
             break;
             case KEY_INPUT:
             {
                 int state_;
-                std::cout<<"按8拔出，按2插入"<<std::endl;
-                std::cin>>state_;
+                if(last_motor_test_state==PULL)
+                    state_=INSERT;
+                else
+                    state_=PULL;
                 int64_t now_angle_{};
                 double diff_angle_[2]{};
+                usleep(100);
                 if(end_effector->readMotorAngle(motor_ip,&now_angle_))
                 {
                     if(state_==PULL|state_==INSERT)
@@ -228,6 +232,7 @@ namespace fsm
                         }
                         file_operator->writeToExcel<double>(diff_angle_,2,"encoder.csv");
                         last_angle=now_angle_;
+                        last_motor_test_state=state_;
                         *state=state_;
                     }
                     else
@@ -253,7 +258,7 @@ namespace fsm
         if(end_sensor->getSensorData(&sensor_data_[1]))
         {
             sensor_data_[0]+=1.0/freq;
-            file_operator->writeToExcel<double>(sensor_data_,2,"file.csv");
+            file_operator->writeToExcel<double>(sensor_data_,2,"force.csv");
         }
     }
 
