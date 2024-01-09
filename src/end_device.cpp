@@ -8,7 +8,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv,"end_device");
     ros::NodeHandle nh;
-    ros::Rate r(20);
+    ros::Rate r(50);
     setlocale(LC_ALL, "");
     setlocale(LC_CTYPE, "zh_CN.utf8");
 
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     end_effector.initCAN1();
     end_putter.initPutter();
 
-    int insert_state_=START_MOVE;
+    int insert_state_=WAIT;
     int state_=DEVICE_TEST;
     int motor_tc_ = 1;
     int motor_nz_ = 0;

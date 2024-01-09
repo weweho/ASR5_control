@@ -133,17 +133,17 @@ namespace fsm
                 if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(dps/DPS2ANGLE_COMMAND),(int32_t)(-encoder_data)))
                 {
                     sleep(duration);
-                    *state=AUTO_INSERT;
+                    *state=KEY_INPUT;
                 }
             break;
             case PULL:
                 if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(dps/DPS2ANGLE_COMMAND),(int32_t)(encoder_data)))
                 {
                     sleep(duration);
-                    *state=AUTO_INSERT;
+                    *state=KEY_INPUT;
                 }
             break;
-            case AUTO_INSERT:
+            case KEY_INPUT:
             {
                 int state_;
                 if(last_motor_test_state==PULL)
@@ -205,10 +205,19 @@ namespace fsm
     {
         switch(*insert_state)
         {
+            case WAIT:
+            {
+                if(end_effector->sendSpeedCommand(motor_ip,0))
+                {
+                    sleep(3);
+                    *insert_state=START_MOVE;
+                };
+            }
+            break;
             case START_MOVE:
             {
-                int tc_speed_=100;
-                if(end_effector->sendSpeedCommand(motor_ip,(uint16_t)(abs(tc_speed_)/DPS2SPEED_COMMAND)))
+                int tc_speed_=-400;
+                if(end_effector->sendSpeedCommand(motor_ip,(tc_speed_/DPS2SPEED_COMMAND)))
                     *insert_state=RISING_DETECT;
             }
             break;
@@ -222,6 +231,7 @@ namespace fsm
                     if(end_sensor->detectPressureTrends(now_motor_angle_,rising_deque_max_size_,rising_threshold_,&rising_angle)==1)
                     {
                         ROS_INFO("检测到压力值上升!当前角度值：%ld\r\n",rising_angle);
+                        duration=0;
                         *insert_state=DROPPING_DETECT;
                     }
                 }
@@ -231,7 +241,8 @@ namespace fsm
             {
                 int64_t now_motor_angle_{};
                 size_t dropping_deque_max_size_=3;
-                int dropping_threshold_=3;
+                int dropping_threshold_=2;
+                int duration_threshold_=50;
                 if(end_effector->readMotorAngle(motor_ip,&now_motor_angle_))
                 {
                     if(end_sensor->detectPressureTrends(now_motor_angle_,dropping_deque_max_size_,dropping_threshold_,&dropping_angle)==2)
@@ -239,17 +250,31 @@ namespace fsm
                         ROS_INFO("检测到压力值下降! 当前角度值：%ld\r\n",dropping_angle);
                         *insert_state=DETECT_FINISH;
                     }
+                    else
+                    {
+                        duration++;
+                        if(duration>=duration_threshold_)
+                            *insert_state=CURVED;
+                    }
                 }
             }
             break;
+            case CURVED:
+            {
+                if(end_effector->sendSpeedCommand(motor_ip,0))
+                    ROS_INFO("弯针了！");
+                *insert_state=DO_NOTHING;
+                return true;
+            }
             case DETECT_FINISH:
             {
                 if(end_effector->sendSpeedCommand(motor_ip,0))
-                    ROS_INFO("刺穿表皮，电机停止！要补偿的角度值：%ld",(dropping_angle-rising_angle));
-                dropping_angle=0;
-                rising_angle=0;
-                *insert_state=DO_NOTHING;
-                return true;
+                {
+                    ROS_INFO("刺穿表皮，电机停止！要补偿的角度值：%ld",(rising_angle-dropping_angle));
+                    dropping_angle=0;
+                    rising_angle=0;
+                    *insert_state=DO_NOTHING;
+                }
             }
             break;
         }

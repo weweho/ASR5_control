@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 
     while(ros::ok()&&end_putter.putterisOpen())
     {
-        if(end_putter.send_string("1 1 45"))
+        if(end_putter.send_string("1 4 0\n"))
             break;
         r.sleep();
     }

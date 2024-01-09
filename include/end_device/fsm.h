@@ -15,13 +15,15 @@
 #define DEVICE_TEST 6
 #define SENSOR_TEST 7
 #define PULL        8
-#define AUTO_INSERT  9
+#define SWITCH_STATE  9
 
 //INSERT FSM
 #define RISING_DETECT   1
 #define DROPPING_DETECT 2
 #define DETECT_FINISH   3
 #define START_MOVE      4
+#define CURVED          5
+#define WAIT            6
 
 //CONVERT
 #define DPS2SPEED_COMMAND       0.01    // 0.01 dps/LSB
@@ -50,6 +52,7 @@ private:
     int64_t last_angle{};
     double sensor_data[2]{};
     int64_t rising_angle{},dropping_angle{};
+    int duration{};
     void infoState(const int *state);
 };
 
