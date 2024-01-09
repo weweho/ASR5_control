@@ -9,7 +9,6 @@ namespace fsm
     FSM::FSM()
     {
         last_motor_test_state=PULL;
-        start_time=ros::Time().now().toSec();
     }
 
     void FSM::infoState(const int *state)
@@ -53,110 +52,18 @@ namespace fsm
         }
     }
 
-    bool FSM::insertDirect(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,int *insert_state,int motor_tc)
-    {
-        size_t max_size=5;
-        switch(*insert_state)
-        {
-            case 1:
-            {
-                double now_time_=ros::Time().now().toSec();
-                if(end_sensor->pressureRising((now_time_-start_time),max_size))
-                    if(end_effector->readMotorAngle(motor_tc,&encoder[0]))
-                        *insert_state=2;
-            }
-            break;
-            case 2:
-            {
-                double now_time_=ros::Time().now().toSec();
-                if(end_sensor->pressureDropping((now_time_-start_time),max_size))
-                    if(end_effector->readMotorAngle(motor_tc,&encoder[1]))
-                        *insert_state=3;
-            }
-            break;
-            case 3:
-            {
-                ROS_INFO("stop!!刺穿了！！");
-                ROS_INFO("要补偿的值：%ld",(encoder[1]-encoder[0]));
-                return true;
-            }
-
-        }
-        return false;
-    }
-
-    void FSM::controlEndDevice(end_effector::endEffector *end_effector, end_sensor::endSensor *end_sensor,
-                          end_putter::endPutter *end_putter, file_operator::fileOperator *file_operator,
-                          int *state,int motor_nz,int motor_tc)
-    {
-        infoState(state);
-        switch(*state)
-        {
-            case INIT_DEVICE:
-            {
-                int tc_speed_=30;
-                double tc_angle_=360.0;
-                if(end_putter->send_string("1 1 45\n")
-                   &&end_effector->sendAngleCommand(motor_tc,(uint16_t)(abs(tc_speed_)/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
-                    *state = INSERT;
-            }
-            break;
-            case INSERT:
-            {
-                int tc_speed_=-30;
-                int tc_angle_=-120;
-                double max_force_=1.0;
-                double min_force_=0.5;
-                double interval_second_=0.2;
-//                if(end_sensor->insertDetect(max_force_,min_force_,interval_second_))
-//                {
-//                    if(end_effector->sendSpeedCommand(motor_tc,0))
-//                    {
-//                        usleep(1);
-//                        if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(abs(tc_speed_)/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
-//                            *state = TWIST;
-//                    }
-//                }
-//                else
-//                    end_effector->sendSpeedCommand(motor_tc,(int32_t)(tc_speed_/DPS2SPEED_COMMAND));
-            }
-            break;
-            case TWIST:
-            {
-                MOTOR_DATA motor_data_{};
-                end_effector->readMotorData(motor_tc,&motor_data_);
-                usleep(4);
-                end_effector->readMotorData(motor_tc,&motor_data_);
-                int nz_speed_=20;
-                double nz_angle_=60.0;
-                int nz_times_=5;
-                for(int i = 0 ; i< nz_times_*2 ; i++)
-                {
-                    if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(nz_speed_/DPS2ANGLE_COMMAND),(int32_t)(nz_angle_/DEGREE2ANGLE_COMMAND)))
-                        nz_angle_=nz_angle_*-1;
-                }
-                *state = DO_NOTHING;
-            }
-            break;
-            default:
-            {
-            }
-            break;
-        }
-    }
-
-    void FSM::testEndDevice(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor, end_putter::endPutter *end_putter,
-                               int *state,int motor_nz,int motor_tc)
+    void FSM::testAllDevice(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor, end_putter::endPutter *end_putter,
+                            int *state,int motor_nz,int motor_tc)
     {
         infoState(state);
         switch(*state)
         {
             case DEVICE_TEST:
             {
-                int tc_speed_=80;
-                double tc_angle_=120.0;
-                int nz_speed_=80;
-                double nz_angle_=120.0;
+                int tc_speed_=150;
+                double tc_angle_=300.0;
+                int nz_speed_=150;
+                double nz_angle_=300.0;
                 if(end_putter->send_string("1 1 45\n"))
                 {
                     ROS_INFO("Test putter\r\n");
@@ -226,17 +133,17 @@ namespace fsm
                 if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(dps/DPS2ANGLE_COMMAND),(int32_t)(-encoder_data)))
                 {
                     sleep(duration);
-                    *state=KEY_INPUT;
+                    *state=AUTO_INSERT;
                 }
             break;
             case PULL:
                 if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(dps/DPS2ANGLE_COMMAND),(int32_t)(encoder_data)))
                 {
                     sleep(duration);
-                    *state=KEY_INPUT;
+                    *state=AUTO_INSERT;
                 }
             break;
-            case KEY_INPUT:
+            case AUTO_INSERT:
             {
                 int state_;
                 if(last_motor_test_state==PULL)
@@ -294,5 +201,59 @@ namespace fsm
         }
     }
 
+    bool FSM::testInsertDirect(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,int *insert_state,int motor_ip)
+    {
+        switch(*insert_state)
+        {
+            case START_MOVE:
+            {
+                int tc_speed_=100;
+                if(end_effector->sendSpeedCommand(motor_ip,(uint16_t)(abs(tc_speed_)/DPS2SPEED_COMMAND)))
+                    *insert_state=RISING_DETECT;
+            }
+            break;
+            case RISING_DETECT:
+            {
+                int64_t now_motor_angle_{};
+                size_t rising_deque_max_size_=5;
+                int rising_threshold_=3;
+                if(end_effector->readMotorAngle(motor_ip,&now_motor_angle_))
+                {
+                    if(end_sensor->detectPressureTrends(now_motor_angle_,rising_deque_max_size_,rising_threshold_,&rising_angle)==1)
+                    {
+                        ROS_INFO("检测到压力值上升!当前角度值：%ld\r\n",rising_angle);
+                        *insert_state=DROPPING_DETECT;
+                    }
+                }
+            }
+            break;
+            case DROPPING_DETECT:
+            {
+                int64_t now_motor_angle_{};
+                size_t dropping_deque_max_size_=3;
+                int dropping_threshold_=3;
+                if(end_effector->readMotorAngle(motor_ip,&now_motor_angle_))
+                {
+                    if(end_sensor->detectPressureTrends(now_motor_angle_,dropping_deque_max_size_,dropping_threshold_,&dropping_angle)==2)
+                    {
+                        ROS_INFO("检测到压力值下降! 当前角度值：%ld\r\n",dropping_angle);
+                        *insert_state=DETECT_FINISH;
+                    }
+                }
+            }
+            break;
+            case DETECT_FINISH:
+            {
+                if(end_effector->sendSpeedCommand(motor_ip,0))
+                    ROS_INFO("刺穿表皮，电机停止！要补偿的角度值：%ld",(dropping_angle-rising_angle));
+                dropping_angle=0;
+                rising_angle=0;
+                *insert_state=DO_NOTHING;
+                return true;
+            }
+            break;
+        }
+        return false;
+    }
 
 }//fsm

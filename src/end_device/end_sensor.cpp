@@ -63,21 +63,59 @@ namespace end_sensor
         return false;
     }
 
-    bool endSensor::insertDetect(double max_force,double min_force,double interval_second)
-    {
-        double now_force_;
-        getSensorData(&now_force_);
-        if(now_force_>=max_force)
-        {
-            max_force_time=ros::Time::now().toSec();
-            ROS_INFO("max insert force,now time :%f\r\n",max_force_time);
+    void endSensor::storeSensorData(std::deque<SensorData>& buffer, const SensorData& newData, size_t maxSize) {
+        if (buffer.size() >= maxSize) {
+            buffer.pop_front();
         }
-        if(now_force_<=min_force&&(ros::Time::now().toSec()-max_force_time)<=interval_second)
-        {
-            ROS_INFO("insert succeed!\r\n");
-            return true;
-        }
-        return false;
+        buffer.push_back(newData);
     }
 
+    int endSensor::detectPressureTrends(int64_t now_motor_angle,size_t max_size ,int threshold,int64_t *return_motor_angle)
+    {
+        double pressure_{};
+        int rising_cumulative_count_{},dropping_cumulative_count_{};
+        int return_state_{};
+        if(getSensorData(&pressure_))
+        {
+            SensorData new_data_{};
+            new_data_.angle=now_motor_angle;
+            new_data_.value=pressure_;
+            storeSensorData(sensor_data_buffer, new_data_, max_size);
+            for (const auto& data : sensor_data_buffer)
+            {
+                std::cout << "(" << data.angle << ", " << data.value << ") ";
+                if(data.value>last_value&&last_value>second_last_value)         //Rising
+                {
+                    rising_cumulative_count_++;
+                    dropping_cumulative_count_=0;
+                }
+                else if(data.value<last_value&&last_value<second_last_value)    //Constant
+                {
+                    dropping_cumulative_count_++;
+                    rising_cumulative_count_=0;
+                }
+                else if(data.value==last_value&&last_value==second_last_value)  //Dropping
+                {
+                    dropping_cumulative_count_=0;
+                    rising_cumulative_count_=0;
+                }
+                second_last_value=last_value;
+                last_value=data.value;
+            }
+            std::cout << std::endl;
+            if(rising_cumulative_count_>=threshold)
+            {
+                *return_motor_angle=sensor_data_buffer[0].angle;
+                return_state_= 1;
+            }
+            else if(dropping_cumulative_count_>=threshold)
+            {
+                *return_motor_angle=sensor_data_buffer[max_size-1].angle;
+                return_state_= 2;
+            }
+            else
+                return_state_=0;
+        }
+        return return_state_;
+    }
 }
