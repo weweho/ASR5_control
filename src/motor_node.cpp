@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     int state_=KEY_INPUT;
     int motor_tc_ = 1;
     int motor_nz_ = 0;
-    int target_angle_=25263;
+    int target_angle_=33726;
     int duration_=1;
     double no_load_=1.5;
     while(ros::ok()&&end_effector.CAN1isOpen())
