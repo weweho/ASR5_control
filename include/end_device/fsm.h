@@ -16,6 +16,7 @@
 #define SENSOR_TEST 7
 #define PULL        8
 #define SWITCH_STATE  9
+#define WAIT            10
 
 //INSERT FSM
 #define RISING_DETECT   1
@@ -23,7 +24,7 @@
 #define DETECT_FINISH   3
 #define START_MOVE      4
 #define CURVED_DETECT   5
-#define WAIT            6
+#define INSERT_WAIT     6
 
 //CONVERT
 #define DPS2SPEED_COMMAND       0.01    // 0.01 dps/LSB

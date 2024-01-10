@@ -126,22 +126,42 @@ namespace fsm
 
     void FSM::testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip , int encoder_data ,int dps ,int duration)
     {
-        infoState(state);
+//        infoState(state);
         switch(*state)
         {
+            case WAIT:
+            {
+                if(end_effector->sendSpeedCommand(motor_ip,0))
+                {
+                    ROS_INFO("三秒后开始自动插拔\r\n");
+                    ROS_INFO("3\r\n");
+                    sleep(1);
+                    ROS_INFO("2\r\n");
+                    sleep(1);
+                    ROS_INFO("1\r\n");
+                    sleep(1);
+                    ROS_INFO("程序开始\r\n");
+                    *state=KEY_INPUT;
+                }
+            }
+            break;
             case INSERT:
+            {
                 if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(dps/DPS2ANGLE_COMMAND),(int32_t)(-encoder_data)))
                 {
                     sleep(duration);
                     *state=KEY_INPUT;
                 }
+            }
             break;
             case PULL:
+            {
                 if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(dps/DPS2ANGLE_COMMAND),(int32_t)(encoder_data)))
                 {
                     sleep(duration);
                     *state=KEY_INPUT;
                 }
+            }
             break;
             case KEY_INPUT:
             {
@@ -157,7 +177,7 @@ namespace fsm
                 {
                     if(state_==PULL|state_==INSERT)
                     {
-                        ROS_INFO("当前角度 :%ld ; 上一次的角度: %ld \r\n",now_angle_,last_angle);
+//                        ROS_INFO("当前角度 :%ld ; 上一次的角度: %ld \r\n",now_angle_,last_angle);
                         if(state_==PULL) //此时逆时针转，对于motor_angle来说是减小（说明书上说的）
                         {
                             diff_angle_[0]=8.0;
@@ -175,14 +195,9 @@ namespace fsm
                         last_motor_test_state=state_;
                         *state=state_;
                     }
-                    else
-                    {
-                        *state=DO_NOTHING;
-                        ROS_INFO("不知道你按了啥，我先退了");
-                    }
                 }
                 else
-                    ROS_INFO("没收到电机回复，再按一次");
+                    ROS_INFO("没收到电机回复，再发送一次");
             }
             break;
             default:
@@ -266,7 +281,7 @@ namespace fsm
                     int64_t now_angle_;
                     if(end_effector->readMotorAngle(motor_ip,&now_angle_))
                     {
-                        ROS_INFO("刺穿表皮，电机停止！要补偿的角度值：%ld",detect_dropping?(now_angle_-dropping_angle):(now_angle_-(int64_t)(skin_thickness/( 28.5/360.0))-rising_angle));
+                        ROS_INFO("刺穿表皮，电机停止！皮的厚度：%f",detect_dropping?(dropping_angle-rising_angle):skin_thickness);
                         dropping_angle=0;
                         rising_angle=0;
                         *insert_state=CURVED_DETECT;

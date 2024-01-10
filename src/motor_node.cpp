@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     fsm::FSM fsm;
     end_effector.initCAN1();
 
-    int state_=KEY_INPUT;
+    int state_=WAIT;
     int motor_tc_ = 1;
     int motor_nz_ = 0;
     int target_angle_=33726;
