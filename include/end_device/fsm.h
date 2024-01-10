@@ -46,12 +46,12 @@ public:
     void testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip, int encoder_data,int dps ,double duration);
     void testSensorData(end_sensor::endSensor *end_sensor,file_operator::fileOperator *file_operator, int freq);
     void testInsertDirect(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,int *insert_state,int motor_tc,int tc_speed,double skin_thickness); //记得负是向下！
+    double sensor_data[2]{};
 
 private:
     int last_motor_test_state;
     int last_state{};
     int64_t last_angle{};
-    double sensor_data[2]{};
     int64_t rising_angle[2]{},dropping_angle[2]{};
     double detected_rising_time{};
     bool detect_dropping{false};
