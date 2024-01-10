@@ -23,7 +23,7 @@ public:
     bool initUSB0();
     bool USB0isOpen();
     bool getSensorData(double *value);
-    int detectPressureTrends(int64_t now_motor_angle,size_t max_size,int threshold,int64_t *return_motor_angle); // 0 正常情况； 1 压力递增； 2 压力递减；
+    int detectPressureTrends(int64_t now_motor_angle,size_t max_size,int threshold,int64_t return_motor_angle[]); // 0 正常情况； 1 压力递增； 2 压力递减；
 
 private:
     serial::Serial sp;

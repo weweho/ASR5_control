@@ -70,7 +70,7 @@ namespace end_sensor
         buffer.push_back(newData);
     }
 
-    int endSensor::detectPressureTrends(int64_t now_motor_angle,size_t max_size ,int threshold,int64_t *return_motor_angle)
+    int endSensor::detectPressureTrends(int64_t now_motor_angle,size_t max_size ,int threshold,int64_t return_motor_angle[])
     {
         double pressure_{};
         int rising_cumulative_count_{},dropping_cumulative_count_{};
@@ -116,7 +116,11 @@ namespace end_sensor
                 return_state_= 1;
             else
                 return_state_=0;
-            *return_motor_angle=sensor_data_buffer[0].angle;
+            {
+                return_motor_angle[0]=sensor_data_buffer[0].angle;
+                return_motor_angle[1]=sensor_data_buffer[max_size-1].angle;
+            }
+
         }
         return return_state_;
     }
