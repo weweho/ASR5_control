@@ -220,11 +220,17 @@ namespace fsm
     {
         switch(*insert_state)
         {
-            case WAIT:
+            case INSERT_WAIT:
             {
                 if(end_effector->sendSpeedCommand(motor_ip,0))
                 {
-                    sleep(3);
+                    ROS_INFO("3\r\n");
+                    sleep(1);
+                    ROS_INFO("2\r\n");
+                    sleep(1);
+                    ROS_INFO("1\r\n");
+                    sleep(1);
+                    ROS_INFO("程序开始\r\n");
                     *insert_state=START_MOVE;
                 }
             }
@@ -239,7 +245,7 @@ namespace fsm
             {
                 int64_t now_motor_angle_{};
                 size_t rising_deque_max_size_=5;
-                int rising_threshold_=3;
+                int rising_threshold_=4;
                 if(end_effector->readMotorAngle(motor_ip,&now_motor_angle_))
                 {
                     if(end_sensor->detectPressureTrends(now_motor_angle_,rising_deque_max_size_,rising_threshold_,&rising_angle)==1)
@@ -281,7 +287,7 @@ namespace fsm
                     int64_t now_angle_;
                     if(end_effector->readMotorAngle(motor_ip,&now_angle_))
                     {
-                        ROS_INFO("刺穿表皮，电机停止！皮的厚度：%f",detect_dropping?(dropping_angle-rising_angle):skin_thickness);
+                        ROS_INFO("刺穿表皮，电机停止！去皮后要补偿的角度值：%ld",detect_dropping?(dropping_angle-now_angle_):(-now_angle_-(int64_t)(skin_thickness/( 28.5/360.0))+rising_angle));
                         dropping_angle=0;
                         rising_angle=0;
                         *insert_state=CURVED_DETECT;
@@ -293,12 +299,12 @@ namespace fsm
             {
                 double now_pressure_;
                 if(end_sensor->getSensorData(&now_pressure_))
-                {
-                    if(now_pressure_>=0.85)
-                        ROS_INFO("弯针了！\r\n");
-                    else
-                        ROS_INFO("顺利刺入！\r\n");
-                }
+//                {
+//                    if(now_pressure_>=0.85)
+//                        ROS_INFO("弯针了！\r\n");
+//                    else
+//                        ROS_INFO("顺利刺入！\r\n");
+//                }
                 *insert_state=DO_NOTHING;
             }
         }
