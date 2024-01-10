@@ -22,9 +22,10 @@ int main(int argc, char** argv)
     ros::Publisher value_pub = nh.advertise<std_msgs::Float64>("/sensor_value", 1000);
     while(ros::ok())
     {
-//        end_sensor.getSensorData(&sensor_value_.data);
-//        value_pub.publish(sensor_value_);
         fsm.testSensorData(&end_sensor, &file_operator , freq);
+        sensor_value_.data=fsm.sensor_data[1];
+        ROS_INFO("%f\r\n",fsm.sensor_data[1]);
+        value_pub.publish(sensor_value_);
         r.sleep();
     }
     return 0;
