@@ -43,7 +43,7 @@ class FSM
 public:
     FSM();
     void testAllDevice(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor, end_putter::endPutter *end_putter, int *state,int motor_nz,int motor_tc);
-    void testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip, int encoder_data,int dps ,int duration);
+    void testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip, int encoder_data,int dps ,double duration);
     void testSensorData(end_sensor::endSensor *end_sensor,file_operator::fileOperator *file_operator, int freq);
     void testInsertDirect(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,int *insert_state,int motor_tc,int tc_speed,double skin_thickness); //记得负是向下！
 
@@ -52,7 +52,7 @@ private:
     int last_state{};
     int64_t last_angle{};
     double sensor_data[2]{};
-    int64_t rising_angle{},dropping_angle{};
+    int64_t rising_angle[2]{},dropping_angle[2]{};
     double detected_rising_time{};
     bool detect_dropping{false};
     void infoState(const int *state);

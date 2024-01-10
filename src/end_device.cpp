@@ -22,14 +22,17 @@ int main(int argc, char** argv)
     end_effector.initCAN1();
     end_putter.initPutter();
 
-    int insert_state_=WAIT;
+    int insert_state_=INSERT_WAIT;
     int state_=DEVICE_TEST;
     int motor_tc_ = 1;
     int motor_nz_ = 0;
+    int tc_speed=-500;
+    double skin_thickness=10.0;
+
     while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen()&&end_putter.putterisOpen())
     {
 //        fsm.testAllDevice(&end_effector,&end_sensor, &end_putter, &state_,motor_nz_,motor_tc_);
-        fsm.testInsertDirect(&end_effector,&end_sensor,&insert_state_,motor_tc_);
+        fsm.testInsertDirect(&end_effector,&end_sensor,&insert_state_,motor_tc_,tc_speed,skin_thickness);
         r.sleep();
     }
     return 0;

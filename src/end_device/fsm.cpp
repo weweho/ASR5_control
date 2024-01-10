@@ -124,7 +124,7 @@ namespace fsm
         }
     }
 
-    void FSM::testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip , int encoder_data ,int dps ,int duration)
+    void FSM::testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip , int encoder_data ,int dps ,double duration)
     {
 //        infoState(state);
         switch(*state)
@@ -149,7 +149,7 @@ namespace fsm
             {
                 if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(dps/DPS2ANGLE_COMMAND),(int32_t)(-encoder_data)))
                 {
-                    sleep(duration);
+                    usleep(duration*1000000);
                     *state=KEY_INPUT;
                 }
             }
@@ -158,7 +158,7 @@ namespace fsm
             {
                 if(end_effector->sendAngleCommand(motor_ip,(uint16_t)(dps/DPS2ANGLE_COMMAND),(int32_t)(encoder_data)))
                 {
-                    sleep(duration);
+                    usleep(duration*1000000);
                     *state=KEY_INPUT;
                 }
             }
@@ -248,9 +248,9 @@ namespace fsm
                 int rising_threshold_=4;
                 if(end_effector->readMotorAngle(motor_ip,&now_motor_angle_))
                 {
-                    if(end_sensor->detectPressureTrends(now_motor_angle_,rising_deque_max_size_,rising_threshold_,&rising_angle)==1)
+                    if(end_sensor->detectPressureTrends(now_motor_angle_,rising_deque_max_size_,rising_threshold_,rising_angle)==1)
                     {
-                        ROS_INFO("检测到压力值上升!上升开始时角度值：%ld\r\n",rising_angle);
+                        ROS_INFO("检测到压力值上升!上升开始时角度值：%ld\r\n",rising_angle[0]);
                         detected_rising_time=ros::Time().now().toSec();
                         *insert_state=DROPPING_DETECT;
                     }
@@ -271,9 +271,9 @@ namespace fsm
                 }
                 else if(end_effector->readMotorAngle(motor_ip,&now_motor_angle_))
                 {
-                    if(end_sensor->detectPressureTrends(now_motor_angle_,dropping_deque_max_size_,dropping_threshold_,&dropping_angle)==2)
+                    if(end_sensor->detectPressureTrends(now_motor_angle_,dropping_deque_max_size_,dropping_threshold_,dropping_angle)==2)
                     {
-                        ROS_INFO("检测到压力值下降! 下降开始时角度值：%ld\r\n",dropping_angle);
+                        ROS_INFO("检测到压力值下降! 下降开始时角度值：%ld\r\n",dropping_angle[0]);
                         detect_dropping=true;
                         *insert_state=DETECT_FINISH;
                     }
@@ -287,9 +287,7 @@ namespace fsm
                     int64_t now_angle_;
                     if(end_effector->readMotorAngle(motor_ip,&now_angle_))
                     {
-                        ROS_INFO("刺穿表皮，电机停止！去皮后要补偿的角度值：%ld",detect_dropping?(dropping_angle-now_angle_):(-now_angle_-(int64_t)(skin_thickness/( 28.5/360.0))+rising_angle));
-                        dropping_angle=0;
-                        rising_angle=0;
+                        ROS_INFO("刺穿表皮，电机停止！去皮后要补偿的角度值：%ld",detect_dropping?(dropping_angle[0]-now_angle_):(-now_angle_-(int64_t)(skin_thickness/( 28.5/360.0))+rising_angle[0]));
                         *insert_state=CURVED_DETECT;
                     }
                 }
@@ -299,12 +297,12 @@ namespace fsm
             {
                 double now_pressure_;
                 if(end_sensor->getSensorData(&now_pressure_))
-//                {
-//                    if(now_pressure_>=0.85)
-//                        ROS_INFO("弯针了！\r\n");
-//                    else
-//                        ROS_INFO("顺利刺入！\r\n");
-//                }
+                {
+                    if(rising_angle[1]>=0.9)
+                        ROS_INFO("弯针了！\r\n");
+                    else
+                        ROS_INFO("顺利刺入！\r\n");
+                }
                 *insert_state=DO_NOTHING;
             }
         }
