@@ -5,8 +5,8 @@
 #ifndef SRC_FSM_H
 #define SRC_FSM_H
 
-//END_DEVICE FSM
 #define DO_NOTHING  0
+//END_DEVICE FSM
 #define INIT_DEVICE 1
 #define INSERT      2
 #define TWIST       3
@@ -25,6 +25,10 @@
 #define START_MOVE      4
 #define CURVED_DETECT   5
 #define INSERT_WAIT     6
+
+#define RISING          1
+#define DROPPING        2
+#define STABLE          0
 
 //CONVERT
 #define DPS2SPEED_COMMAND       0.01    // 0.01 dps/LSB
@@ -53,6 +57,9 @@ private:
     int last_state{};
     int64_t last_angle{};
     int64_t rising_angle[2]{},dropping_angle[2]{};
+    double rising_value[2]{},dropping_value[2]{};
+    double curved_threshold{};
+    double rising_average_value{},dropping_average_value{};
     double detected_rising_time{};
     bool detect_dropping{false};
     void infoState(const int *state);

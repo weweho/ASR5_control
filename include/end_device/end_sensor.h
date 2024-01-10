@@ -23,7 +23,7 @@ public:
     bool initUSB0();
     bool USB0isOpen();
     bool getSensorData(double *value);
-    int detectPressureTrends(int64_t now_motor_angle,size_t max_size,int threshold,int64_t return_motor_angle[]); // 0 正常情况； 1 压力递增； 2 压力递减；
+    int detectPressureTrends(int64_t now_motor_angle,size_t max_size,int threshold,int64_t return_motor_angle[],double return_value_angle[],double *average_pressure); // 0 正常情况； 1 压力递增； 2 压力递减；
 
 private:
     serial::Serial sp;
@@ -31,7 +31,7 @@ private:
     uint8_t end_sensor_send[8]{};
     uint8_t end_sensor_rec[9]{};
     std::deque<SensorData> sensor_data_buffer;
-    double last_value{},second_last_value{};
+    double last_value{},second_last_value{},value_sum{};
     static void storeSensorData(std::deque<SensorData>& buffer, const SensorData& newData, size_t maxSize);
 
 };

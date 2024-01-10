@@ -23,7 +23,8 @@ int main(int argc, char** argv)
     while(ros::ok())
     {
         fsm.testSensorData(&end_sensor, &file_operator , freq);
-        sensor_value_.data=fsm.sensor_data[1];
+        if(fsm.sensor_data[1]<3.0)
+            sensor_value_.data=fsm.sensor_data[1];
         ROS_INFO("%f\r\n",fsm.sensor_data[1]);
         value_pub.publish(sensor_value_);
         r.sleep();

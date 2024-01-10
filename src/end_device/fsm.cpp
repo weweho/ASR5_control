@@ -9,6 +9,7 @@ namespace fsm
     FSM::FSM()
     {
         last_motor_test_state=PULL;
+        curved_threshold=1.1;
     }
 
     void FSM::infoState(const int *state)
@@ -126,7 +127,7 @@ namespace fsm
 
     void FSM::testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip , int encoder_data ,int dps ,double duration)
     {
-//        infoState(state);
+        infoState(state);
         switch(*state)
         {
             case WAIT:
@@ -177,7 +178,7 @@ namespace fsm
                 {
                     if(state_==PULL|state_==INSERT)
                     {
-//                        ROS_INFO("当前角度 :%ld ; 上一次的角度: %ld \r\n",now_angle_,last_angle);
+                        ROS_INFO("当前角度 :%ld ; 上一次的角度: %ld \r\n",now_angle_,last_angle);
                         if(state_==PULL) //此时逆时针转，对于motor_angle来说是减小（说明书上说的）
                         {
                             diff_angle_[0]=8.0;
@@ -245,10 +246,10 @@ namespace fsm
             {
                 int64_t now_motor_angle_{};
                 size_t rising_deque_max_size_=5;
-                int rising_threshold_=4;
+                int rising_threshold_=3;
                 if(end_effector->readMotorAngle(motor_ip,&now_motor_angle_))
                 {
-                    if(end_sensor->detectPressureTrends(now_motor_angle_,rising_deque_max_size_,rising_threshold_,rising_angle)==1)
+                    if(end_sensor->detectPressureTrends(now_motor_angle_,rising_deque_max_size_,rising_threshold_,rising_angle,rising_value,&rising_average_value)==RISING)
                     {
                         ROS_INFO("检测到压力值上升!上升开始时角度值：%ld\r\n",rising_angle[0]);
                         detected_rising_time=ros::Time().now().toSec();
@@ -263,19 +264,18 @@ namespace fsm
                 size_t dropping_deque_max_size_=3;
                 int dropping_threshold_=2;
                 double duration_after_rise_=skin_thickness/( abs(tc_speed)*( 28.5/360.0) );
-                if( ros::Time().now().toSec()-detected_rising_time>duration_after_rise_)
+                if(ros::Time().now().toSec()-detected_rising_time>duration_after_rise_)
                 {
                     ROS_INFO("理论上已经刺破皮肤，已停止\r\n");
                     detect_dropping=false;
-                    *insert_state=DETECT_FINISH;
+                    *insert_state=CURVED_DETECT;
                 }
                 else if(end_effector->readMotorAngle(motor_ip,&now_motor_angle_))
                 {
-                    if(end_sensor->detectPressureTrends(now_motor_angle_,dropping_deque_max_size_,dropping_threshold_,dropping_angle)==2)
+                    if(end_sensor->detectPressureTrends(now_motor_angle_,dropping_deque_max_size_,dropping_threshold_,dropping_angle,dropping_value,&dropping_average_value)==DROPPING)
                     {
                         ROS_INFO("检测到压力值下降! 下降开始时角度值：%ld\r\n",dropping_angle[0]);
-                        detect_dropping=true;
-                        *insert_state=DETECT_FINISH;
+                        *insert_state=CURVED_DETECT;
                     }
                 }
             }
@@ -287,24 +287,29 @@ namespace fsm
                     int64_t now_angle_;
                     if(end_effector->readMotorAngle(motor_ip,&now_angle_))
                     {
-                        ROS_INFO("刺穿表皮，电机停止！去皮后要补偿的角度值：%ld",detect_dropping?(dropping_angle[0]-now_angle_):(-now_angle_-(int64_t)(skin_thickness/( 28.5/360.0))+rising_angle[0]));
-                        *insert_state=CURVED_DETECT;
+                        ROS_INFO("刺穿表皮，电机停止！去皮后要补偿的角度值：%ld\r\n",detect_dropping?(dropping_angle[0]-now_angle_):(-now_angle_-(int64_t)(skin_thickness/( 28.5/360.0))+rising_angle[0]));
+                        *insert_state=DO_NOTHING;
                     }
                 }
             }
             break;
             case CURVED_DETECT:
             {
-                double now_pressure_;
-                if(end_sensor->getSensorData(&now_pressure_))
+                if(end_effector->sendSpeedCommand(motor_ip,0))
                 {
-                    if(rising_angle[1]>=0.9)
-                        ROS_INFO("弯针了！\r\n");
+                    if(dropping_value[1]>curved_threshold)
+                    {
+                        ROS_INFO("发生弯针！！\r\n");
+                        *insert_state=DO_NOTHING;
+                    }
                     else
-                        ROS_INFO("顺利刺入！\r\n");
+                    {
+                        detect_dropping=true;
+                        *insert_state=DETECT_FINISH;
+                    }
                 }
-                *insert_state=DO_NOTHING;
             }
+            break;
         }
     }
 

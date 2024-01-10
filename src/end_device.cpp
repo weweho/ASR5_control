@@ -26,8 +26,8 @@ int main(int argc, char** argv)
     int state_=DEVICE_TEST;
     int motor_tc_ = 1;
     int motor_nz_ = 0;
-    int tc_speed=-500;
-    double skin_thickness=10.0;
+    int tc_speed=-450;
+    double skin_thickness=8.0;
 
     while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen()&&end_putter.putterisOpen())
     {

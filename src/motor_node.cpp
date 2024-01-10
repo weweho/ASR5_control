@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     int motor_nz_ = 0;
     int target_angle_=30000;
     double duration_=1.0;
-    double no_load_=6.0;
+    double no_load_=5.0;
     while(ros::ok()&&end_effector.CAN1isOpen())
     {
         fsm.testMotorAccuracy(&end_effector,&file_operator,&state_,motor_tc_,target_angle_,(target_angle_*no_load_)/100.0,duration_);
