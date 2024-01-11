@@ -27,7 +27,7 @@
 #define INSERT_WAIT     16
 
 //OTHER
-#define INSERT_DEEP     17
+#define INSERT_DEEPER   17
 #define INSERT_FINISH   18
 #define TWIST_BACK      19
 #define TWIST_FINISH    20
@@ -58,11 +58,11 @@ public:
     void testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip, int encoder_data,int dps ,double duration);
     void testSensorData(end_sensor::endSensor *end_sensor,file_operator::fileOperator *file_operator, int freq);
     void testInsertDirect(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,int *insert_state,int motor_tc,int tc_speed,double skin_thickness); //记得负是向下！
-    void completeProcess(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,end_putter::endPutter *end_putter,
+    void completeProcess(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,
                          int *state,int motor_tc,int motor_nz,
-                         uint16_t insert_speed,int32_t insert_angle,double skin_thickness,
-                         int tc_angle,int tc_times_per_min,int tc_times,
-                         int nz_angle,int nz_times_per_min,int nz_times); //记得负是向下！
+                         uint16_t insert_speed,double insert_depth,double skin_thickness,
+                         double tc_depth,int tc_times_per_min,int tc_times,
+                         double nz_angle,int nz_times_per_min,int nz_times); //记得负是向下！
     double sensor_data[2]{};
 
 private:

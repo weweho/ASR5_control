@@ -8,7 +8,6 @@ namespace fsm
 {
     FSM::FSM()
     {
-        last_motor_test_state=PULL;
         curved_threshold=1.1;
         tc_coefficient=6.0;
         nz_coefficient=6.0;
@@ -315,26 +314,31 @@ namespace fsm
         }
     }
 
-    void FSM::completeProcess(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,end_putter::endPutter *end_putter,
+    void FSM::completeProcess(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,
                               int *state,int motor_tc,int motor_nz,
-                              uint16_t insert_speed,int32_t insert_angle,double skin_thickness,
-                              int tc_angle,int tc_times_per_min,int tc_times,
-                              int nz_angle,int nz_times_per_min,int nz_times)
+                              uint16_t insert_speed,double insert_depth,double skin_thickness,
+                              double tc_depth,int tc_times_per_min,int tc_times,
+                              double nz_angle,int nz_times_per_min,int nz_times)
     {
         switch(*state)
         {
             case KEY_INPUT://判断要刺入的角度 check
             {
-                std::cout<<"请输入要刺入的角度"<<std::endl;
-                std::cin>>putter_target_angle;
-                *state=INIT_DEVICE;
+                ROS_INFO("%d\r\n",tc_times_per_min);
+                if(end_effector->sendSpeedCommand(motor_tc,0))
+                {
+                    std::cout<<"请输入要刺入的角度"<<std::endl;
+                    std::cin>>putter_target_angle;
+                    std::cout<<"要刺入的角度："<<putter_target_angle<<std::endl;
+                    *state=INIT_DEVICE;
+                }
             }
                 break;
-            case INIT_DEVICE://上电时提插电机先上升一定高度,同时推杆开始移动到预定角度
+            case INIT_DEVICE://上电时提插电机先上升一定高度,同时推杆开始移动到预定角度 check
             {
                 int64_t motor_tc_angle_{};
-                int64_t motor_tc_initial_angle_{};
-                int32_t motor_tc_initial_speed_{};
+                int64_t motor_tc_initial_angle_=10000;
+                int32_t motor_tc_initial_speed_=100;
                 if(!initial_putter_ready)
                 {
                     initial_putter_ready=true;
@@ -371,11 +375,11 @@ namespace fsm
                 break;
             case START_MOVE: //提插电机保持恒定速度下压
             {
-                if(end_effector->sendSpeedCommand(motor_tc,(insert_speed/DPS2SPEED_COMMAND)))
+                if(end_effector->sendSpeedCommand(motor_tc,-(insert_speed/DPS2SPEED_COMMAND)))
                     *state=RISING_DETECT;
             }
                 break;
-            case RISING_DETECT: //检测上升沿
+            case RISING_DETECT: //检测上升沿----->要记得设置下压最大值，超过了就是猪跑了
             {
                 int64_t now_motor_angle_{};
                 size_t rising_deque_max_size_=5;
@@ -396,7 +400,9 @@ namespace fsm
                 int64_t now_motor_angle_{};
                 size_t dropping_deque_max_size_=3;
                 int dropping_threshold_=2;
-                double duration_after_rise_=skin_thickness/( abs(insert_speed)*( 28.5/360.0) );
+
+                double duration_after_rise_=skin_thickness/( (insert_speed)*( 28.5/360.0) );
+                ROS_INFO("理论刺破间隔：%f\r\n",duration_after_rise_);
                 if(ros::Time().now().toSec()-detected_rising_time>duration_after_rise_)
                 {
                     ROS_INFO("理论上已经刺破皮肤，已停止\r\n");
@@ -432,45 +438,63 @@ namespace fsm
                 break;
             case DETECT_FINISH: //检测结束，此时电机停转
             {
-                if(end_effector->sendSpeedCommand(motor_tc,0))
+
+                int64_t now_angle_;
+                if(end_effector->readMotorAngle(motor_tc,&now_angle_))
                 {
-                    int64_t now_angle_;
-                    if(end_effector->readMotorAngle(motor_tc,&now_angle_))
-                    {
-                        replenish_angle=(detect_dropping?(dropping_angle[0]-now_angle_):(-now_angle_-(int64_t)(skin_thickness/( 28.5/360.0))+rising_angle[0]));
-                        ROS_INFO("刺穿表皮，电机停止！去皮后要补偿的角度值：%ld\r\n",replenish_angle);
-                        sleep(1);
-                        *state=INSERT_DEEP;
-                    }
+                    replenish_angle=(detect_dropping?(dropping_angle[0]-now_angle_)/100.0:(rising_angle[0]-now_angle_-(int64_t)(skin_thickness/( 28.5/360.0)))/100.0);
+                    ROS_INFO("刺穿表皮，电机停止！去皮后要补偿的角度值：%ld\r\n",replenish_angle);
+                    sleep(1);
+                    *state=INSERT_DEEPER;
                 }
+
             }
                 break;
-            case INSERT_DEEP: //插入更深的值
+            case INSERT_DEEPER:
             {
-                *state=INSERT;
+                double insert_angle_=insert_depth*360.0/28.5-replenish_angle;
+                ROS_INFO("理论要继续下压的角度：%f\r\n",insert_angle_);
+                if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(insert_speed/DPS2ANGLE_COMMAND),(int32_t)(-insert_angle_/DEGREE2ANGLE_COMMAND)))
+                {
+                    ROS_INFO("准备开始提插\r\n");
+                    ROS_INFO("3\r\n");
+                    sleep(1);
+                    ROS_INFO("2\r\n");
+                    sleep(1);
+                    ROS_INFO("1\r\n");
+                    sleep(1);
+                    last_motor_test_state=INSERT;
+                    *state=INSERT;
+                }
+
             }
                 break;
             case INSERT:
             {
-                double tc_dps_=(tc_angle)/100*tc_coefficient;
-                if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(tc_dps_/DPS2ANGLE_COMMAND),(int32_t)(tc_angle)))
+                ROS_INFO("提\r\n");
+                double tc_angle_=tc_depth*360.0/28.5;
+                double tc_dps_=tc_angle_*tc_coefficient;
+                if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(tc_dps_/DPS2ANGLE_COMMAND),(int32_t)(tc_angle_/DEGREE2ANGLE_COMMAND)))
                 {
-                    usleep(2*tc_times_per_min/60*1000000);
-                    tc_accumulate_times++;
-                    if(tc_accumulate_times<tc_times)
-                        *state=SWITCH_TC_STATE;
-                    else
-                        *state=INSERT_FINISH;
+                    usleep((60*1000000)/(2*tc_times_per_min));
+                    *state=SWITCH_TC_STATE;
                 }
             }
                 break;
             case PULL:
             {
-                double tc_dps_=(tc_angle)/100*tc_coefficient;
-                if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(tc_dps_/DPS2ANGLE_COMMAND),(int32_t)(-tc_angle)))
+                ROS_INFO("插\r\n");
+                double tc_angle_=tc_depth*360.0/28.5;
+                double tc_dps_=tc_angle_*tc_coefficient;
+                if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(tc_dps_/DPS2ANGLE_COMMAND),(int32_t)(-tc_angle_/DEGREE2ANGLE_COMMAND)))
                 {
-                    usleep(2*tc_times_per_min/60*1000000);
-                    *state=SWITCH_TC_STATE;
+                    ROS_INFO("等待时间：%d\r\n",60/(2*tc_times_per_min)*1000000);
+                    usleep((60*1000000)/(2*tc_times_per_min));
+                    tc_accumulate_times++;
+                    if(tc_accumulate_times<tc_times)
+                        *state=SWITCH_TC_STATE;
+                    else
+                        *state=INSERT_FINISH;
                 }
             }
                 break;
@@ -486,25 +510,22 @@ namespace fsm
                 usleep(100);
                 if(end_effector->readMotorAngle(motor_tc,&now_angle_))
                 {
-                    if(state_==PULL|state_==INSERT)
+                    ROS_INFO("当前角度 :%ld ; 上一次的角度: %ld \r\n",now_angle_,last_angle);
+                    if(last_motor_test_state==PULL)
                     {
-                        ROS_INFO("当前角度 :%ld ; 上一次的角度: %ld \r\n",now_angle_,last_angle);
-                        if(state_==PULL) //此时逆时针转，对于motor_angle来说是减小（说明书上说的）
-                        {
-                            diff_angle_[0]=8.0;
-                            diff_angle_[1]=((last_angle-now_angle_)*0.01);
-                            ROS_INFO("下压时的角度差值：%f",diff_angle_[1]);
-                        }
-                        else //此时顺时针转，对于motor_angle来说是增加
-                        {
-                            diff_angle_[0]=2.0;
-                            diff_angle_[1]=((now_angle_-last_angle)*0.01);
-                            ROS_INFO("上拉时的角度差值：%f",diff_angle_[1]);
-                        }
-                        last_angle=now_angle_;
-                        last_motor_test_state=state_;
-                        *state=state_;
+                        diff_angle_[0]=8.0;
+                        diff_angle_[1]=((now_angle_-last_angle)*0.01);
+                        ROS_INFO("提的角度差值：%f",diff_angle_[1]);
                     }
+                    else //此时顺时针转，对于motor_angle来说是增加
+                    {
+                        diff_angle_[0]=2.0;
+                        diff_angle_[1]=((last_angle-now_angle_)*0.01);
+                        ROS_INFO("插的角度差值：%f",diff_angle_[1]);
+                    }
+                    last_angle=now_angle_;
+                    last_motor_test_state=state_;
+                    *state=state_;
                 }
                 else
                     ROS_INFO("没收到电机回复，再发送一次");
@@ -512,16 +533,25 @@ namespace fsm
                 break;
             case INSERT_FINISH:
             {
-                sleep(1);
-                *state=TWIST;
+                if(end_effector->sendSpeedCommand(motor_tc,0))
+                {
+                    ROS_INFO("提插结束，即将开始捻转\r\n");
+                    ROS_INFO("3\r\n");
+                    sleep(1);
+                    ROS_INFO("2\r\n");
+                    sleep(1);
+                    ROS_INFO("1\r\n");
+                    sleep(1);
+                    *state=TWIST_BACK;
+                }
             }
             break;
             case TWIST:
             {
-                double nz_dps_=(nz_angle)/100*nz_coefficient;
-                if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(nz_dps_/DPS2ANGLE_COMMAND),(int32_t)(nz_angle)))
+                double nz_dps_=(nz_angle)*nz_coefficient;
+                if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(nz_dps_/DPS2ANGLE_COMMAND),(int32_t)(nz_angle/DEGREE2ANGLE_COMMAND)))
                 {
-                    usleep(2*nz_times_per_min/60*1000000);
+                    usleep((60*1000000)/(2*nz_times_per_min));
                     nz_accumulate_times++;
                     if(nz_accumulate_times<nz_times)
                         *state=SWITCH_NZ_STATE;
@@ -532,10 +562,10 @@ namespace fsm
                 break;
             case TWIST_BACK:
             {
-                double nz_dps_=(nz_angle)/100*nz_coefficient;
-                if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(nz_dps_/DPS2ANGLE_COMMAND),(int32_t)(-nz_angle)))
+                double nz_dps_=(nz_angle)*nz_coefficient;
+                if(end_effector->sendAngleCommand(motor_nz,(uint16_t)(nz_dps_/DPS2ANGLE_COMMAND),(int32_t)(-nz_angle/DEGREE2ANGLE_COMMAND)))
                 {
-                    usleep(2*nz_times_per_min/60*1000000);
+                    usleep((60*1000000)/(2*nz_times_per_min));
                     *state=SWITCH_NZ_STATE;
                 }
             }
@@ -546,31 +576,28 @@ namespace fsm
                 if(last_motor_test_state==TWIST)
                     state_=TWIST_BACK;
                 else
-                    state_=TWIST_BACK;
+                    state_=TWIST;
                 int64_t now_angle_{};
                 double diff_angle_[2]{};
                 usleep(100);
                 if(end_effector->readMotorAngle(motor_nz,&now_angle_))
                 {
-                    if(state_==TWIST|state_==TWIST_BACK)
+                    ROS_INFO("当前角度 :%ld ; 上一次的角度: %ld \r\n",now_angle_,last_angle);
+                    if(state_==TWIST)
                     {
-                        ROS_INFO("当前角度 :%ld ; 上一次的角度: %ld \r\n",now_angle_,last_angle);
-                        if(state_==TWIST) //此时逆时针转，对于motor_angle来说是减小（说明书上说的）
-                        {
-                            diff_angle_[0]=8.0;
-                            diff_angle_[1]=((last_angle-now_angle_)*0.01);
-                            ROS_INFO("捻的角度差值：%f",diff_angle_[1]);
-                        }
-                        else //此时顺时针转，对于motor_angle来说是增加
-                        {
-                            diff_angle_[0]=2.0;
-                            diff_angle_[1]=((now_angle_-last_angle)*0.01);
-                            ROS_INFO("转的角度差值：%f",diff_angle_[1]);
-                        }
-                        last_angle=now_angle_;
-                        last_motor_test_state=state_;
-                        *state=state_;
+                        diff_angle_[0]=8.0;
+                        diff_angle_[1]=((last_angle-now_angle_)*0.01);
+                        ROS_INFO("捻的角度差值：%f",diff_angle_[1]);
                     }
+                    else
+                    {
+                        diff_angle_[0]=2.0;
+                        diff_angle_[1]=((now_angle_-last_angle)*0.01);
+                        ROS_INFO("转的角度差值：%f",diff_angle_[1]);
+                    }
+                    last_angle=now_angle_;
+                    last_motor_test_state=state_;
+                    *state=state_;
                 }
                 else
                     ROS_INFO("没收到电机回复，再发送一次");
@@ -578,8 +605,11 @@ namespace fsm
                 break;
             case TWIST_FINISH:
             {
-                sleep(1);
-                ROS_INFO("针灸结束？？\r\n");
+                if(end_effector->sendSpeedCommand(motor_nz,0))
+                {
+                    ROS_INFO("针灸结束\r\n");
+                    *state=DO_NOTHING;
+                }
             }
             break;
         }
