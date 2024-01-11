@@ -56,9 +56,15 @@ namespace end_sensor
         {
             usleep(100); //0.1ms
             sp.read(end_sensor_rec,sp.available());
-            *value = (end_sensor_rec[3]<<24|end_sensor_rec[4]<<16|end_sensor_rec[5]<<8|end_sensor_rec[6])*0.01;
-            ROS_INFO("rec_data :%f",*value );
-            return true;
+            double raw_value_=(end_sensor_rec[3]<<24|end_sensor_rec[4]<<16|end_sensor_rec[5]<<8|end_sensor_rec[6])*0.01;
+            if(raw_value_<30.0)
+            {
+                *value=raw_value_;
+                ROS_INFO("rec_data :%f",*value );
+                return true;
+            }
+            else
+                ROS_ERROR("SENSOR DATA ERROR！！！！！\r\n");
         }
         return false;
     }
