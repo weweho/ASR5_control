@@ -22,9 +22,11 @@ int main(int argc, char** argv)
     int target_angle_=30000;
     double duration_=1.0;
     double no_load_=5.0;
+    int64_t now_angle_{};
     while(ros::ok()&&end_effector.CAN1isOpen())
     {
-        fsm.testMotorAccuracy(&end_effector,&file_operator,&state_,motor_tc_,target_angle_,(target_angle_*no_load_)/100.0,duration_);
+//        fsm.testMotorAccuracy(&end_effector,&file_operator,&state_,motor_tc_,target_angle_,(target_angle_*no_load_)/100.0,duration_);
+        end_effector.readMotorAngle(motor_tc_,&now_angle_);
         r.sleep();
     }
     return 0;
