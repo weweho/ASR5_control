@@ -15,17 +15,25 @@
 #define DEVICE_TEST 6
 #define SENSOR_TEST 7
 #define PULL        8
-#define SWITCH_STATE  9
+#define SWITCH_TC_STATE  9
 #define WAIT            10
 
 //INSERT FSM
-#define RISING_DETECT   1
-#define DROPPING_DETECT 2
-#define DETECT_FINISH   3
-#define START_MOVE      4
-#define CURVED_DETECT   5
-#define INSERT_WAIT     6
+#define RISING_DETECT   11
+#define DROPPING_DETECT 12
+#define DETECT_FINISH   13
+#define START_MOVE      14
+#define CURVED_DETECT   15
+#define INSERT_WAIT     16
 
+//OTHER
+#define INSERT_DEEP     17
+#define INSERT_FINISH   18
+#define TWIST_BACK      19
+#define TWIST_FINISH    20
+#define SWITCH_NZ_STATE 21
+
+//PRESSURE DETECT
 #define RISING          1
 #define DROPPING        2
 #define STABLE          0
@@ -50,6 +58,11 @@ public:
     void testMotorAccuracy(end_effector::endEffector *end_effector,file_operator::fileOperator *file_operator,int *state,int motor_ip, int encoder_data,int dps ,double duration);
     void testSensorData(end_sensor::endSensor *end_sensor,file_operator::fileOperator *file_operator, int freq);
     void testInsertDirect(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,int *insert_state,int motor_tc,int tc_speed,double skin_thickness); //记得负是向下！
+    void completeProcess(end_effector::endEffector *end_effector,end_sensor::endSensor *end_sensor,end_putter::endPutter *end_putter,
+                         int *state,int motor_tc,int motor_nz,
+                         uint16_t insert_speed,int32_t insert_angle,double skin_thickness,
+                         int tc_angle,int tc_times_per_min,int tc_times,
+                         int nz_angle,int nz_times_per_min,int nz_times); //记得负是向下！
     double sensor_data[2]{};
 
 private:
@@ -63,6 +76,13 @@ private:
     double detected_rising_time{};
     bool detect_dropping{false};
     void infoState(const int *state);
+
+    int putter_target_angle;
+    bool initial_putter_ready{false};
+    int64_t replenish_angle{};
+    int tc_accumulate_times{},nz_accumulate_times{};
+    double tc_coefficient{},nz_coefficient{};
+
 };
 
 }
