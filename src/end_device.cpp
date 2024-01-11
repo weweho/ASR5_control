@@ -14,13 +14,10 @@ int main(int argc, char** argv)
 
     end_effector::endEffector end_effector;
     end_sensor::endSensor end_sensor;
-    end_putter::endPutter end_putter;
-    file_operator::fileOperator file_operator;
     fsm::FSM fsm;
 
     end_sensor.initUSB0();
     end_effector.initCAN1();
-    end_putter.initPutter();
 
     int state_=KEY_INPUT;
     int motor_tc_ = 1;
@@ -35,7 +32,7 @@ int main(int argc, char** argv)
     int nz_times_per_min_=120;
     int nz_times_=10;
 
-    while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen()&&end_putter.putterisOpen())
+    while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen())
     {
         fsm.completeProcess(&end_effector,&end_sensor,
                             &state_,motor_tc_,motor_nz_,

@@ -322,64 +322,41 @@ namespace fsm
     {
         switch(*state)
         {
-            case KEY_INPUT://判断要刺入的角度 check
+            case KEY_INPUT:
             {
-                ROS_INFO("%d\r\n",tc_times_per_min);
+                int64_t motor_tc_initial_angle_=300;
+                int32_t motor_tc_initial_speed_=100;
                 if(end_effector->sendSpeedCommand(motor_tc,0))
                 {
                     std::cout<<"请输入要刺入的角度"<<std::endl;
                     std::cin>>putter_target_angle;
                     std::cout<<"要刺入的角度："<<putter_target_angle<<std::endl;
-                    *state=INIT_DEVICE;
-                }
-            }
-                break;
-            case INIT_DEVICE://上电时提插电机先上升一定高度,同时推杆开始移动到预定角度 check
-            {
-                int64_t motor_tc_angle_{};
-                int64_t motor_tc_initial_angle_=10000;
-                int32_t motor_tc_initial_speed_=100;
-                if(!initial_putter_ready)
-                {
-                    initial_putter_ready=true;
-                    switch(putter_target_angle)
+                    if(end_effector->sendAngleCommand(motor_tc,(uint16_t)(motor_tc_initial_speed_/DPS2ANGLE_COMMAND),(int32_t)(motor_tc_initial_angle_/DEGREE2ANGLE_COMMAND)))
                     {
-                        case 90:
-                            end_putter->send_string("1 1 90\n");
-                            break;
-                        case 45:
-                            end_putter->send_string("1 1 45\r\n");
-                            break;
-                        case 30:
-                            end_putter->send_string("1 1 30\r\n");
-                            break;
-                        default:
-                            end_putter->send_string("1 1 90\n");
-                            break;
+                        sleep(3);
+                        *state=INIT_DEVICE;
                     }
                 }
-                if(end_effector->readMotorAngle(motor_tc,&motor_tc_angle_))
+            }
+                break;
+            case INIT_DEVICE:
+            {
+                if(end_effector->sendSpeedCommand(motor_tc,0))
                 {
-                    if(motor_tc_angle_<motor_tc_initial_angle_)
-                        end_effector->sendSpeedCommand(motor_tc,motor_tc_initial_speed_/DPS2SPEED_COMMAND);
-                    else
-                        if(end_effector->sendSpeedCommand(motor_tc,0))
-                        {
-                            std::string input_;
-                            std::cout<<"按任意键开始针灸"<<std::endl;
-                            std::cin>>input_;
-                            *state=START_MOVE;
-                        }
+                    std::string input_;
+                    std::cout<<"按任意键开始针灸"<<std::endl;
+                    std::cin>>input_;
+                    *state=START_MOVE;
                 }
             }
                 break;
-            case START_MOVE: //提插电机保持恒定速度下压
+            case START_MOVE:
             {
                 if(end_effector->sendSpeedCommand(motor_tc,-(insert_speed/DPS2SPEED_COMMAND)))
                     *state=RISING_DETECT;
             }
                 break;
-            case RISING_DETECT: //检测上升沿----->要记得设置下压最大值，超过了就是猪跑了
+            case RISING_DETECT:
             {
                 int64_t now_motor_angle_{};
                 size_t rising_deque_max_size_=5;
@@ -395,7 +372,7 @@ namespace fsm
                 }
             }
                 break;
-            case DROPPING_DETECT: //检测下降沿
+            case DROPPING_DETECT:
             {
                 int64_t now_motor_angle_{};
                 size_t dropping_deque_max_size_=3;
@@ -419,7 +396,7 @@ namespace fsm
                 }
             }
                 break;
-            case CURVED_DETECT: //弯针检测
+            case CURVED_DETECT:
             {
                 if(end_effector->sendSpeedCommand(motor_tc,0))
                 {
@@ -436,7 +413,7 @@ namespace fsm
                 }
             }
                 break;
-            case DETECT_FINISH: //检测结束，此时电机停转
+            case DETECT_FINISH:
             {
 
                 int64_t now_angle_;
