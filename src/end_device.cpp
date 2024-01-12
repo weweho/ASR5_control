@@ -23,9 +23,9 @@ int main(int argc, char** argv)
     int motor_tc_ = 1;
     int motor_nz_ = 0;
     int32_t insert_speed_=300;
-    double skin_thickness_=3.0;
-    double insert_depth_=10.0;
-    int tc_depth_=5.0;
+    double skin_thickness_=2.0;
+    double insert_depth_=15.0;
+    int tc_depth_=10.0;
     int tc_times_per_min_=120;
     int tc_times_=10;
     double nz_angle_=360.0;
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 
     while(ros::ok()&&end_effector.CAN1isOpen()&&end_sensor.USB0isOpen())
     {
-        fsm.completeProcess(&end_effector,&end_sensor,
+        fsm.semiCompleteProcess(&end_effector,&end_sensor,
                             &state_,motor_tc_,motor_nz_,
                             insert_speed_,insert_depth_,skin_thickness_,
                             tc_depth_,tc_times_per_min_,tc_times_,

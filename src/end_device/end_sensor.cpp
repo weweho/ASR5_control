@@ -117,9 +117,9 @@ namespace end_sensor
             std::cout << std::endl;
             std::cout << "rising_cumulative_count_:"<<rising_cumulative_count_<<std::endl;
             std::cout << "dropping_cumulative_count_:"<<dropping_cumulative_count_<<std::endl;
-            if(dropping_cumulative_count_>=threshold)
+            if(dropping_cumulative_count_>=threshold&&sensor_data_buffer.size()>=max_size)
                 return_state_= 2;
-            else if(rising_cumulative_count_>=threshold)
+            else if(rising_cumulative_count_>=threshold&&sensor_data_buffer.size()>=max_size)
                 return_state_= 1;
             else
                 return_state_=0;
