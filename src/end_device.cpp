@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     int motor_tc_ = 1;
     int motor_nz_ = 0;
     int32_t insert_speed_=300;
-    double skin_thickness_=2.0;
+    double skin_thickness_=2.5;
     double insert_depth_=15.0;
     int tc_depth_=10.0;
     int tc_times_per_min_=120;

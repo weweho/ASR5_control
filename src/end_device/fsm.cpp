@@ -359,7 +359,7 @@ namespace fsm
             {
                 int64_t now_motor_angle_{};
                 size_t rising_deque_max_size_=5;
-                int rising_threshold_=3;
+                int rising_threshold_=4;
                 if(end_effector->readMotorAngle(motor_tc,&now_motor_angle_))
                 {
                     if(end_sensor->detectPressureTrends(now_motor_angle_,rising_deque_max_size_,rising_threshold_,rising_angle,rising_value,&rising_average_value)==RISING)
@@ -374,8 +374,8 @@ namespace fsm
             case DROPPING_DETECT:
             {
                 int64_t now_motor_angle_{};
-                size_t dropping_deque_max_size_=3;
-                int dropping_threshold_=2;
+                size_t dropping_deque_max_size_=5;
+                int dropping_threshold_=3;
 
                 double duration_after_rise_=skin_thickness/( (insert_speed)*( 28.5/360.0) );
                 if(ros::Time().now().toSec()-detected_rising_time>duration_after_rise_)
